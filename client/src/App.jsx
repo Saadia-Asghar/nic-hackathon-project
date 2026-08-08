@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth";
 import Landing from "./pages/Landing";
@@ -17,10 +18,21 @@ import MapPage from "./pages/MapPage";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import DemoSwitcher from "./components/DemoSwitcher";
+import SplashScreen from "./components/SplashScreen";
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem("hunar_splash_seen");
+  });
+
+  function handleSplashComplete() {
+    sessionStorage.setItem("hunar_splash_seen", "1");
+    setShowSplash(false);
+  }
+
   return (
     <AuthProvider>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
