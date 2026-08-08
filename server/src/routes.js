@@ -1,0 +1,860 @@
+import { Router } from "express";
+import { v4 as uuid } from "uuid";
+import { store } from "./store.js";
+import { ADJACENT, MAP_CENTER, nowIso, jitter } from "./constants.js";
+import { analyzeZoneSkill, buildForecast } from "./agents.js";
+import { seed } from "./seed.js";
+import {
+  authenticate,
+  createUser,
+  findUserById,
+  publicUser,
+  requireAuth,
+  signToken,
+} from "./auth.js";
+import { computeTrust } from "./trust.js";
+import { notifyUser } from "./notify.js";
+
+const router = Router();
+
+function safeUser(user) {
+  return publicUser(user);
+}
+
+function zoneCoords(zoneId) {
+  const z = store.read().zones.find((x) => x.id === zoneId);
+  if (!z?.lat) return { lat: MAP_CENTER.lat, lng: MAP_CENTER.lng };
+  return { lat: z.lat, lng: z.lng };
+}
+
+router.get("/health", (_req, res) => {
+  res.json({ ok: true, product: "Hunar Naqsha", track: "Mohalla Mind" });
+});
+
+router.post("/demo/reset", async (_req, res) => {
+  try {
+    await seed();
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---- Auth ----
+router.post("/auth/signup", async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      role,
+      zoneId,
+      skillCategory,
+      availability,
+      bio,
+    } = req.body || {};
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: "Name, email, password, and role are required" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    let workerId = null;
+    if (role === "worker") {
+      if (!zoneId || !skillCategory || !availability) {
+        return res.status(400).json({
+          error: "Workers need zone, skill, and availability at signup",
+        });
+      }
+      workerId = uuid();
+    }
+
+    const user = await createUser({
+      name,
+      email,
+      password,
+      role,
+      zoneId: zoneId || null,
+      workerId,
+    });
+
+    if (role === "worker") {
+      const zc = zoneCoords(zoneId);
+      const coords = jitter(zc.lat, zc.lng);
+      store.write((db) => {
+        db.workers.unshift({
+          id: workerId,
+          userId: user.id,
+          name: user.name,
+          skillCategory,
+          zoneId,
+          availability,
+          bio: bio || null,
+          photoUrl: null,
+          rating: 0,
+          completedJobs: 0,
+          isActive: true,
+          availableThisWeek: true,
+          registeredAt: nowIso(),
+          lat: coords.lat,
+          lng: coords.lng,
+        });
+      });
+      await analyzeZoneSkill(zoneId, skillCategory);
+    }
+
+    const fresh = findUserById(user.id);
+    notifyUser(fresh.id, {
+      type: "welcome",
+      title: "Account created",
+      body: role === "worker" ? "Your hunar profile is live." : "Post a need whenever you want help.",
+      link: "/app",
+    });
+    const token = signToken(fresh);
+    res.status(201).json({ user: safeUser(fresh), token });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.post("/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: "Email and password required" });
+    const user = await authenticate(email, password);
+    res.json({ user: safeUser(user), token: signToken(user) });
+  } catch (e) {
+    res.status(401).json({ error: e.message });
+  }
+});
+
+router.get("/auth/me", requireAuth, (req, res) => {
+  res.json({ user: safeUser(req.user) });
+});
+
+/** @deprecated Prefer Bearer /auth/me — kept for older clients */
+router.get("/auth/me/:id", (req, res) => {
+  const user = findUserById(req.params.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  res.json({ user: safeUser(user) });
+});
+
+router.get("/resident/:userId/needs", (req, res) => {
+  const db = store.read();
+  const user = findUserById(req.params.userId);
+  if (!user || user.role !== "resident") {
+    return res.status(404).json({ error: "Resident not found" });
+  }
+  const rows = db.needs
+    .filter((n) => n.residentUserId === user.id || (!n.residentUserId && n.residentName === user.name))
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .map((n) => ({
+      ...n,
+      bidCount: db.bids.filter((b) => b.needId === n.id).length,
+      zone: db.zones.find((z) => z.id === n.zoneId),
+    }));
+  res.json(rows);
+});
+
+router.get("/zones", (_req, res) => {
+  const db = store.read();
+  const payload = db.zones.map((z) => {
+    const zs = db.zoneStatus.filter((s) => s.zoneId === z.id);
+    const rank = { red: 3, yellow: 2, green: 1 };
+    const worst = zs.reduce((acc, s) => ((rank[s.gapLevel] || 0) > (rank[acc] || 0) ? s.gapLevel : acc), "green");
+    const topGap = [...zs]
+      .filter((s) => s.gapLevel !== "green")
+      .sort((a, b) => (rank[b.gapLevel] || 0) - (rank[a.gapLevel] || 0))[0];
+    return {
+      ...z,
+      gapLevel: worst,
+      topShortageSkill: topGap?.skillCategory || null,
+      openNeedsCount: db.needs.filter((n) => n.zoneId === z.id && n.status === "open").length,
+      skills: zs,
+    };
+  });
+  res.json(payload);
+});
+
+router.get("/zones/:id", (req, res) => {
+  const db = store.read();
+  const z = db.zones.find((x) => x.id === req.params.id);
+  if (!z) return res.status(404).json({ error: "Zone not found" });
+  res.json({
+    ...z,
+    skills: db.zoneStatus.filter((s) => s.zoneId === z.id),
+    needs: db.needs.filter((n) => n.zoneId === z.id),
+    workers: db.workers.filter((w) => w.zoneId === z.id),
+    alerts: db.alerts.filter((a) => a.zoneId === z.id && a.isActive),
+  });
+});
+
+router.get("/zones/:id/history", (req, res) => {
+  const rows = store
+    .read()
+    .aiHistory.filter((h) => h.zoneId === req.params.id)
+    .slice(0, 30);
+  res.json(rows);
+});
+
+router.get("/needs", (req, res) => {
+  const db = store.read();
+  let rows = [...db.needs].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  if (req.query.zone) rows = rows.filter((n) => n.zoneId === req.query.zone);
+  if (req.query.skill) rows = rows.filter((n) => n.skillCategory === req.query.skill);
+  if (req.query.status) rows = rows.filter((n) => n.status === req.query.status);
+  res.json(
+    rows.map((n) => ({
+      ...n,
+      bidCount: db.bids.filter((b) => b.needId === n.id).length,
+      zone: db.zones.find((z) => z.id === n.zoneId),
+    }))
+  );
+});
+
+router.get("/needs/:id", (req, res) => {
+  const db = store.read();
+  const need = db.needs.find((n) => n.id === req.params.id);
+  if (!need) return res.status(404).json({ error: "Need not found" });
+  const needBids = db.bids
+    .filter((b) => b.needId === need.id)
+    .map((b) => {
+      const worker = db.workers.find((w) => w.id === b.workerId);
+      const servedZone = db.needs.some(
+        (n) =>
+          n.zoneId === need.zoneId &&
+          n.status === "completed" &&
+          n.matchedBidId &&
+          db.bids.some((xb) => xb.id === n.matchedBidId && xb.workerId === b.workerId)
+      );
+      return {
+        ...b,
+        worker,
+        servedThisZone: servedZone,
+      };
+    });
+  res.json({ ...need, bids: needBids, zone: db.zones.find((z) => z.id === need.zoneId) });
+});
+
+router.post("/needs", requireAuth, async (req, res) => {
+  const { skillCategory, description, budgetRange, urgency, zoneId } = req.body || {};
+  if (!skillCategory || !description || !budgetRange || !urgency || !zoneId) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (req.user.role !== "resident") {
+    return res.status(403).json({ error: "Only residents can post needs" });
+  }
+  const coords = jitter(zoneCoords(zoneId).lat, zoneCoords(zoneId).lng);
+  const need = {
+    id: uuid(),
+    skillCategory,
+    description,
+    budgetRange,
+    urgency,
+    zoneId,
+    residentName: req.user.name,
+    residentUserId: req.user.id,
+    status: "open",
+    createdAt: nowIso(),
+    matchedAt: null,
+    matchedBidId: null,
+    lat: coords.lat,
+    lng: coords.lng,
+  };
+  store.write((db) => db.needs.unshift(need));
+  const analysis = await analyzeZoneSkill(zoneId, skillCategory);
+  if (analysis?.gapLevel === "red" || analysis?.gapLevel === "yellow") {
+    notifyUser(req.user.id, {
+      type: "gap",
+      title: `${zoneId} · ${skillCategory}`,
+      body: analysis.gapLevel === "red" ? "Acute shortage — workers nearby may be scarce." : "Gap forming in your zone.",
+      link: `/zones/${zoneId}`,
+    });
+  }
+  res.status(201).json({ need, analysis });
+});
+
+router.patch("/needs/:id/status", async (req, res) => {
+  let need;
+  store.write((db) => {
+    need = db.needs.find((n) => n.id === req.params.id);
+    if (need) need.status = req.body?.status;
+  });
+  if (!need) return res.status(404).json({ error: "Need not found" });
+  await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.json(need);
+});
+
+router.post("/needs/:id/complete", async (req, res) => {
+  let need;
+  store.write((db) => {
+    need = db.needs.find((n) => n.id === req.params.id);
+    if (need && need.status === "matched") {
+      need.jobDone = true;
+      need.jobDoneAt = nowIso();
+    }
+  });
+  if (!need || !need.jobDone) {
+    return res.status(400).json({ error: "Need must be matched to confirm done" });
+  }
+  res.json(need);
+});
+
+router.post("/needs/:id/repost", async (req, res) => {
+  const db = store.read();
+  const old = db.needs.find((n) => n.id === req.params.id);
+  if (!old) return res.status(404).json({ error: "Need not found" });
+  const need = {
+    id: uuid(),
+    skillCategory: old.skillCategory,
+    description: old.description,
+    budgetRange: old.budgetRange,
+    urgency: old.urgency === "flexible" ? "pre-eid" : old.urgency,
+    zoneId: old.zoneId,
+    residentName: old.residentName,
+    residentUserId: old.residentUserId,
+    status: "open",
+    createdAt: nowIso(),
+    matchedAt: null,
+    matchedBidId: null,
+    jobDone: false,
+    repostedFrom: old.id,
+  };
+  store.write((s) => s.needs.unshift(need));
+  const analysis = await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.status(201).json({ need, analysis });
+});
+
+router.get("/workers", (req, res) => {
+  const db = store.read();
+  let rows = db.workers;
+  if (req.query.zone) rows = rows.filter((w) => w.zoneId === req.query.zone);
+  if (req.query.skill) rows = rows.filter((w) => w.skillCategory === req.query.skill);
+  if (req.query.active === "true") rows = rows.filter((w) => w.isActive);
+  const minTrust = Number(req.query.minTrust || 0);
+  const search = String(req.query.search || "").toLowerCase().trim();
+
+  const enriched = rows
+    .map((w) => {
+      const ratings = db.ratings.filter((r) => r.workerId === w.id);
+      const trust = computeTrust(w, ratings);
+      return {
+        ...w,
+        ...trust,
+        zone: db.zones.find((z) => z.id === w.zoneId),
+        reviewCount: ratings.length,
+      };
+    })
+    .filter((w) => w.trustScore >= minTrust)
+    .filter((w) => {
+      if (!search) return true;
+      return (
+        w.name.toLowerCase().includes(search) ||
+        (w.bio || "").toLowerCase().includes(search) ||
+        w.skillCategory.toLowerCase().includes(search)
+      );
+    })
+    .sort((a, b) => b.trustScore - a.trustScore);
+
+  res.json(enriched);
+});
+
+router.get("/workers/:id", (req, res) => {
+  const db = store.read();
+  const worker = db.workers.find((w) => w.id === req.params.id);
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  const workerBids = db.bids.filter((b) => b.workerId === worker.id);
+  const ratings = db.ratings.filter((r) => r.workerId === worker.id);
+  const trust = computeTrust(worker, ratings);
+  res.json({
+    ...worker,
+    ...trust,
+    bids: workerBids,
+    zone: db.zones.find((z) => z.id === worker.zoneId),
+    pendingBids: workerBids.filter((b) => b.status === "pending").length,
+    reviews: ratings.slice(-8).reverse(),
+    reviewCount: ratings.length,
+  });
+});
+
+router.post("/workers", async (req, res) => {
+  const { name, skillCategory, zoneId, availability, bio, photoUrl, userId } = req.body || {};
+  if (!name || !skillCategory || !zoneId || !availability) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  const worker = {
+    id: uuid(),
+    userId: userId || null,
+    name,
+    skillCategory,
+    zoneId,
+    availability,
+    bio: bio || null,
+    photoUrl: photoUrl || null,
+    rating: 0,
+    completedJobs: 0,
+    isActive: true,
+    registeredAt: nowIso(),
+  };
+  store.write((db) => {
+    db.workers.unshift(worker);
+    if (userId) {
+      const u = db.users.find((x) => x.id === userId);
+      if (u) {
+        u.workerId = worker.id;
+        u.zoneId = zoneId;
+      }
+    }
+  });
+  const analysis = await analyzeZoneSkill(zoneId, skillCategory);
+  res.status(201).json({ worker, analysis });
+});
+
+router.get("/worker/:id/open-needs", (req, res) => {
+  const db = store.read();
+  const worker = db.workers.find((w) => w.id === req.params.id);
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  const allowed = ADJACENT[worker.zoneId] || [worker.zoneId];
+  const open = db.needs
+    .filter((n) => n.status === "open" && n.skillCategory === worker.skillCategory && allowed.includes(n.zoneId))
+    .map((n) => ({
+      ...n,
+      bidCount: db.bids.filter((b) => b.needId === n.id).length,
+      zone: db.zones.find((z) => z.id === n.zoneId),
+    }));
+  res.json(open);
+});
+
+router.post("/bids", requireAuth, async (req, res) => {
+  const { needId, priceRs, timelineDays, note } = req.body || {};
+  const db = store.read();
+  const need = db.needs.find((n) => n.id === needId);
+  const workerId = req.user.workerId || req.body?.workerId;
+  const worker = db.workers.find((w) => w.id === workerId);
+  if (req.user.role !== "worker") return res.status(403).json({ error: "Only workers can bid" });
+  if (!need || need.status !== "open") return res.status(400).json({ error: "Need not open" });
+  if (!worker || !worker.isActive) return res.status(400).json({ error: "Worker inactive" });
+  if (worker.userId && worker.userId !== req.user.id) {
+    return res.status(403).json({ error: "Bid only for your own profile" });
+  }
+  if (worker.skillCategory !== need.skillCategory) return res.status(400).json({ error: "Skill mismatch" });
+  const allowed = ADJACENT[worker.zoneId] || [worker.zoneId];
+  if (!allowed.includes(need.zoneId)) {
+    return res.status(400).json({ error: "Need outside your zone / adjacent zones" });
+  }
+  const pending = db.bids.filter((b) => b.workerId === workerId && b.status === "pending");
+  if (pending.length >= 3) return res.status(400).json({ error: "Maximum 3 active bids" });
+  if (db.bids.some((b) => b.needId === needId && b.workerId === workerId && b.status === "pending")) {
+    return res.status(400).json({ error: "Already bid on this need" });
+  }
+  const bid = {
+    id: uuid(),
+    needId,
+    workerId,
+    priceRs: Number(priceRs),
+    timelineDays: Number(timelineDays),
+    note: note || null,
+    status: "pending",
+    createdAt: nowIso(),
+  };
+  store.write((s) => s.bids.unshift(bid));
+  if (need.residentUserId) {
+    notifyUser(need.residentUserId, {
+      type: "bid",
+      title: "New bid on your need",
+      body: `${worker.name} offered Rs ${bid.priceRs} — ${timelineDays} day(s).`,
+      link: `/needs/${need.id}`,
+    });
+  }
+  const analysis = await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.status(201).json({ bid, analysis });
+});
+
+router.get("/bids/need/:needId", (req, res) => {
+  const db = store.read();
+  res.json(
+    db.bids
+      .filter((b) => b.needId === req.params.needId)
+      .map((b) => ({ ...b, worker: db.workers.find((w) => w.id === b.workerId) }))
+  );
+});
+
+router.patch("/bids/:id/accept", requireAuth, async (req, res) => {
+  let need;
+  let bid;
+  let worker;
+  store.write((db) => {
+    bid = db.bids.find((b) => b.id === req.params.id);
+    if (!bid || bid.status !== "pending") return;
+    need = db.needs.find((n) => n.id === bid.needId);
+    if (!need || need.status !== "open") {
+      need = null;
+      return;
+    }
+    if (need.residentUserId && need.residentUserId !== req.user.id) {
+      need = null;
+      bid = null;
+      return;
+    }
+    bid.status = "accepted";
+    for (const s of db.bids) {
+      if (s.needId === need.id && s.status === "pending") s.status = "closed";
+    }
+    need.status = "matched";
+    need.matchedAt = nowIso();
+    need.matchedBidId = bid.id;
+    worker = db.workers.find((w) => w.id === bid.workerId);
+  });
+  if (!need || !bid) return res.status(400).json({ error: "Bid not pending / need not open" });
+  if (worker?.userId) {
+    notifyUser(worker.userId, {
+      type: "match",
+      title: "Bid accepted!",
+      body: `${need.residentName} accepted your bid. Chat is unlocked.`,
+      link: `/needs/${need.id}/chat`,
+    });
+  }
+  const analysis = await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.json({ need, bid, analysis });
+});
+
+router.post("/ratings", async (req, res) => {
+  const { workerId, needId, bidId, stars, comment } = req.body || {};
+  if (!workerId || !needId || !bidId || !stars) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  let worker;
+  let need;
+  let rating;
+  store.write((db) => {
+    need = db.needs.find((n) => n.id === needId);
+    worker = db.workers.find((w) => w.id === workerId);
+    if (!need || !worker || need.status !== "matched" || !need.jobDone) return;
+    rating = {
+      id: uuid(),
+      workerId,
+      needId,
+      bidId,
+      stars: Number(stars),
+      comment: comment || null,
+      ratedAt: nowIso(),
+    };
+    db.ratings.push(rating);
+    const all = db.ratings.filter((r) => r.workerId === workerId);
+    worker.rating = Number((all.reduce((s, r) => s + r.stars, 0) / all.length).toFixed(2));
+    worker.completedJobs += 1;
+    need.status = "completed";
+  });
+  if (!rating) {
+    return res.status(400).json({ error: "Confirm job done before rating" });
+  }
+  const analysis = await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.status(201).json({ rating, worker, analysis });
+});
+
+router.post("/ai/analyze", async (req, res) => {
+  const { zoneId, skillCategory } = req.body || {};
+  if (!zoneId || !skillCategory) return res.status(400).json({ error: "zoneId and skillCategory required" });
+  res.json(await analyzeZoneSkill(zoneId, skillCategory));
+});
+
+router.get("/ai/alerts", (_req, res) => {
+  const db = store.read();
+  res.json(
+    db.alerts
+      .filter((a) => a.isActive)
+      .map((a) => ({ ...a, zone: db.zones.find((z) => z.id === a.zoneId) }))
+  );
+});
+
+router.get("/ai/notice/:zoneId", (req, res) => {
+  const skill = req.query.skill;
+  let rows = store.read().alerts.filter((a) => a.zoneId === req.params.zoneId && a.isActive);
+  if (skill) rows = rows.filter((a) => a.skillCategory === skill);
+  const alert = rows.find((a) => a.gapLevel === "red") || rows[0];
+  if (!alert) return res.status(404).json({ error: "No active alert" });
+  res.json(alert);
+});
+
+router.get("/ai/alerts/:id", (req, res) => {
+  const db = store.read();
+  const alert = db.alerts.find((a) => a.id === req.params.id);
+  if (!alert) return res.status(404).json({ error: "Alert not found" });
+  res.json({ ...alert, zone: db.zones.find((z) => z.id === alert.zoneId) });
+});
+
+router.patch("/ai/alerts/:id/resolve", (req, res) => {
+  store.write((db) => {
+    const a = db.alerts.find((x) => x.id === req.params.id);
+    if (a) {
+      a.isActive = false;
+      a.resolvedAt = nowIso();
+    }
+  });
+  res.json({ ok: true });
+});
+
+// ---- Safe in-app chat (only after match) ----
+router.get("/needs/:id/messages", (req, res) => {
+  const db = store.read();
+  const need = db.needs.find((n) => n.id === req.params.id);
+  if (!need) return res.status(404).json({ error: "Need not found" });
+  if (!["matched", "completed"].includes(need.status)) {
+    return res.status(403).json({ error: "Chat unlocks after a bid is accepted" });
+  }
+  const messages = (db.messages || [])
+    .filter((m) => m.needId === need.id)
+    .sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1));
+  res.json({ need, messages });
+});
+
+router.post("/needs/:id/messages", (req, res) => {
+  const { senderUserId, body } = req.body || {};
+  if (!senderUserId || !body?.trim()) {
+    return res.status(400).json({ error: "senderUserId and body required" });
+  }
+  const db = store.read();
+  const need = db.needs.find((n) => n.id === req.params.id);
+  if (!need || !["matched", "completed"].includes(need.status)) {
+    return res.status(403).json({ error: "Chat unlocks after a bid is accepted" });
+  }
+  const user = findUserById(senderUserId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const accepted = db.bids.find((b) => b.id === need.matchedBidId);
+  const worker = accepted ? db.workers.find((w) => w.id === accepted.workerId) : null;
+  const isResident = need.residentUserId === senderUserId;
+  const isWorker = worker && worker.userId === senderUserId;
+  if (!isResident && !isWorker) {
+    return res.status(403).json({ error: "Only matched parties can chat" });
+  }
+
+  const message = {
+    id: uuid(),
+    needId: need.id,
+    senderUserId,
+    senderRole: isWorker ? "worker" : "resident",
+    senderName: user.name,
+    body: String(body).trim().slice(0, 500),
+    createdAt: nowIso(),
+  };
+  store.write((s) => {
+    if (!s.messages) s.messages = [];
+    s.messages.push(message);
+  });
+  res.status(201).json(message);
+});
+
+router.get("/forecast", (_req, res) => {
+  res.json(buildForecast());
+});
+
+router.get("/zones/:id/top-workers", (req, res) => {
+  const db = store.read();
+  const zoneId = req.params.id;
+  const rows = db.workers
+    .filter((w) => w.zoneId === zoneId && w.isActive)
+    .map((w) => {
+      const ratings = db.ratings.filter((r) => r.workerId === w.id);
+      return { ...w, ...computeTrust(w, ratings), zone: db.zones.find((z) => z.id === w.zoneId) };
+    })
+    .sort((a, b) => b.trustScore - a.trustScore || b.rating - a.rating)
+    .slice(0, 5);
+  res.json(rows);
+});
+
+router.patch("/workers/:id/availability", async (req, res) => {
+  const availableThisWeek = Boolean(req.body?.availableThisWeek);
+  let worker;
+  store.write((db) => {
+    worker = db.workers.find((w) => w.id === req.params.id);
+    if (worker) worker.availableThisWeek = availableThisWeek;
+  });
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  await analyzeZoneSkill(worker.zoneId, worker.skillCategory);
+  res.json(worker);
+});
+
+router.get("/worker/:id/stats", (req, res) => {
+  const db = store.read();
+  const worker = db.workers.find((w) => w.id === req.params.id);
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  const accepted = db.bids.filter((b) => b.workerId === worker.id && b.status === "accepted");
+  const completedNeeds = accepted.filter((b) => {
+    const n = db.needs.find((x) => x.id === b.needId);
+    return n && n.status === "completed";
+  });
+  const earnings = completedNeeds.reduce((s, b) => s + (b.priceRs || 0), 0);
+  const pendingBids = db.bids.filter((b) => b.workerId === worker.id && b.status === "pending");
+  const bidNeedIds = new Set(db.bids.filter((b) => b.workerId === worker.id).map((b) => b.needId));
+  res.json({
+    earningsRs: earnings,
+    completedJobs: completedNeeds.length,
+    pendingBids: pendingBids.length,
+    bidNeedIds: [...bidNeedIds],
+    availableThisWeek: worker.availableThisWeek !== false,
+  });
+});
+
+router.get("/worker/:id/demand-nearby", (req, res) => {
+  const db = store.read();
+  const worker = db.workers.find((w) => w.id === req.params.id);
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  const adjacent = ADJACENT[worker.zoneId] || [worker.zoneId];
+  const hot = db.alerts
+    .filter(
+      (a) =>
+        a.isActive &&
+        a.gapLevel === "red" &&
+        a.skillCategory === worker.skillCategory &&
+        adjacent.includes(a.zoneId) &&
+        a.zoneId !== worker.zoneId
+    )
+    .map((a) => ({
+      ...a,
+      zone: db.zones.find((z) => z.id === a.zoneId),
+      workerNotice: `📢 ${a.zoneId} ke paas ${a.skillCategory} ki demand zyada hai. Agar aap available ho, Hunar Naqsha par nearby needs dekhein.`,
+    }));
+  res.json(hot);
+});
+
+router.patch("/zones/:zoneId/skills/:skill/handle", (req, res) => {
+  const skill = decodeURIComponent(req.params.skill);
+  let status;
+  store.write((db) => {
+    status = db.zoneStatus.find((s) => s.zoneId === req.params.zoneId && s.skillCategory === skill);
+    if (status) {
+      status.communityHandled = true;
+      status.handledAt = nowIso();
+    }
+    for (const a of db.alerts) {
+      if (a.zoneId === req.params.zoneId && a.skillCategory === skill && a.isActive) {
+        a.isActive = false;
+        a.resolvedAt = nowIso();
+        a.communityHandled = true;
+      }
+    }
+  });
+  if (!status) return res.status(404).json({ error: "Zone skill status not found" });
+  res.json(status);
+});
+
+// ---- Map (zones + workers + open needs with lat/lng) ----
+router.get("/map", (_req, res) => {
+  const db = store.read();
+  const rank = { red: 3, yellow: 2, green: 1 };
+  const zones = db.zones.map((z) => {
+    const zs = db.zoneStatus.filter((s) => s.zoneId === z.id);
+    const gapLevel = zs.reduce(
+      (acc, s) => ((rank[s.gapLevel] || 0) > (rank[acc] || 0) ? s.gapLevel : acc),
+      "green"
+    );
+    return {
+      id: z.id,
+      displayName: z.displayName,
+      urduName: z.urduName,
+      lat: z.lat,
+      lng: z.lng,
+      gapLevel,
+      openNeeds: db.needs.filter((n) => n.zoneId === z.id && n.status === "open").length,
+    };
+  });
+  const workers = db.workers
+    .filter((w) => w.isActive && w.lat != null)
+    .map((w) => ({
+      id: w.id,
+      name: w.name,
+      skillCategory: w.skillCategory,
+      zoneId: w.zoneId,
+      lat: w.lat,
+      lng: w.lng,
+      rating: w.rating,
+    }));
+  const needs = db.needs
+    .filter((n) => n.status === "open" && n.lat != null)
+    .map((n) => ({
+      id: n.id,
+      skillCategory: n.skillCategory,
+      description: n.description.slice(0, 80),
+      urgency: n.urgency,
+      zoneId: n.zoneId,
+      lat: n.lat,
+      lng: n.lng,
+    }));
+  res.json({ center: MAP_CENTER, zones, workers, needs });
+});
+
+// ---- Favorites ----
+router.get("/favorites", requireAuth, (req, res) => {
+  const db = store.read();
+  const ids = req.user.favorites || [];
+  const workers = ids
+    .map((id) => db.workers.find((w) => w.id === id))
+    .filter(Boolean)
+    .map((w) => {
+      const ratings = db.ratings.filter((r) => r.workerId === w.id);
+      return { ...w, ...computeTrust(w, ratings), zone: db.zones.find((z) => z.id === w.zoneId) };
+    });
+  res.json(workers);
+});
+
+router.post("/favorites/:workerId", requireAuth, (req, res) => {
+  if (req.user.role !== "resident") {
+    return res.status(403).json({ error: "Only residents can favorite workers" });
+  }
+  const workerId = req.params.workerId;
+  const db = store.read();
+  if (!db.workers.find((w) => w.id === workerId)) {
+    return res.status(404).json({ error: "Worker not found" });
+  }
+  let favorites = [];
+  store.write((s) => {
+    const u = s.users.find((x) => x.id === req.user.id);
+    if (!u.favorites) u.favorites = [];
+    if (!u.favorites.includes(workerId)) u.favorites.push(workerId);
+    favorites = u.favorites;
+  });
+  res.json({ favorites });
+});
+
+router.delete("/favorites/:workerId", requireAuth, (req, res) => {
+  let favorites = [];
+  store.write((s) => {
+    const u = s.users.find((x) => x.id === req.user.id);
+    if (!u.favorites) u.favorites = [];
+    u.favorites = u.favorites.filter((id) => id !== req.params.workerId);
+    favorites = u.favorites;
+  });
+  res.json({ favorites });
+});
+
+// ---- In-app notifications ----
+router.get("/notifications", requireAuth, (req, res) => {
+  const rows = (store.read().notifications || [])
+    .filter((n) => n.userId === req.user.id)
+    .slice(0, 40);
+  res.json(rows);
+});
+
+router.patch("/notifications/:id/read", requireAuth, (req, res) => {
+  let note;
+  store.write((db) => {
+    note = (db.notifications || []).find((n) => n.id === req.params.id && n.userId === req.user.id);
+    if (note) note.read = true;
+  });
+  if (!note) return res.status(404).json({ error: "Not found" });
+  res.json(note);
+});
+
+router.post("/notifications/read-all", requireAuth, (req, res) => {
+  store.write((db) => {
+    for (const n of db.notifications || []) {
+      if (n.userId === req.user.id) n.read = true;
+    }
+  });
+  res.json({ ok: true });
+});
+
+export default router;
