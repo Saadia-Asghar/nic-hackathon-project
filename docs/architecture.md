@@ -21,7 +21,7 @@ graph TD
     end
 
     %% Artificial Intelligence
-    AI[Gemini Agent<br>AI Gap Judge]
+    AI[GPT-4o-mini Agent<br>AI Gap Judge & Price Estimator]
 
     %% Data
     DB[(SQLite / Database)]

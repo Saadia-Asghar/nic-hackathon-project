@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hunar Naqsha - Architecture</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f6fb;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(26, 35, 126, 0.1);
+      max-width: 900px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #1a237e;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hunar Naqsha: System Architecture</h1>
+    <div class="mermaid">
+      graph TD
+          %% User Interfaces
+          subgraph Client [Mobile-first UI / APK]
+              R[Resident Dashboard]
+              W[Worker Dashboard]
+          end
+
+          %% API Layer
+          subgraph API [API Layer]
+              M[Marketplace API]
+              C[Chat/Trust API]
+          end
+
+          %% Services
+          subgraph Logic [Domain Services]
+              GS[Gap Orchestrator]
+              SS[Season Config Rules]
+          end
+
+          %% Artificial Intelligence
+          AI[GPT-4o-mini Agent<br>AI Gap Judge & Price Estimator]
+
+          %% Data
+          DB[(SQLite / Database)]
+
+          %% Connections
+          R -->|Posts Needs, Accepts Bids| M
+          W -->|Registers, Bids on Needs| M
+          R <-->|Chats & Reviews| C
+          W <-->|Chats & Reviews| C
+
+          M --> DB
+          C --> DB
+
+          DB -->|Open Needs, Workers,<br>Bids, Trust Scores| GS
+          SS -->|Eid/Season Rules| GS
+          GS -->|Aggregated Context JSON| AI
+          AI -->|Returns Gap Level, Price & Action| DB
+          
+          DB -->|Updates Home Tiles & Alerts| R
+          DB -->|Updates Home Tiles & Alerts| W
+    </div>
+  </div>
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#e0f2f1',
+        primaryTextColor: '#1a237e',
+        primaryBorderColor: '#00897b',
+        lineColor: '#12195c',
+        secondaryColor: '#e8eaf6',
+        tertiaryColor: '#fff'
+      }
+    });
+  </script>
+</body>
+</html>
