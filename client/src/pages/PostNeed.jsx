@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { api, SKILLS, SKILL_EMOJI } from "../api";
 import { useAuth } from "../auth";
 import { RequireAuth, Shell } from "../components";
@@ -7,9 +7,12 @@ import { RequireAuth, Shell } from "../components";
 function PostNeedForm() {
   const { user } = useAuth();
   const nav = useNavigate();
+  const [params] = useSearchParams();
+  const skillParam = params.get("skill");
+  const forWorker = params.get("for");
   const [form, setForm] = useState({
-    skillCategory: "Tailoring & Stitching",
-    description: "",
+    skillCategory: SKILLS.includes(skillParam) ? skillParam : "Tailoring & Stitching",
+    description: forWorker ? `Looking for ${forWorker} — ` : "",
     budgetRange: "1000-2000",
     urgency: "pre-eid",
     zoneId: user.zoneId || "Z3",
@@ -41,6 +44,11 @@ function PostNeedForm() {
 
   return (
     <Shell title="Post a need" backTo="/app">
+      {forWorker && (
+        <p className="text-sm text-[var(--muted)] mt-0 mb-3">
+          Posting a need inspired by <strong>Ustaad {forWorker}</strong> — they can bid if nearby.
+        </p>
+      )}
       <form className="card p-4" onSubmit={submit}>
         <div className="field">
           <label>Skill</label>

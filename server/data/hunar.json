@@ -1,26 +1,26 @@
 {
   "users": [
     {
-      "id": "c4f6dc1b-0f23-4633-8742-449573e60bc9",
+      "id": "9b450973-1e1a-466b-a845-ad238b9e588a",
       "name": "Fatima Bibi",
       "email": "fatima@demo.com",
-      "passwordHash": "$2b$10$7oR27ZiMD3uw4MjrbH8X/OQAI1bV4.KHstROHmybpi/R1DV8bJ7L6",
+      "passwordHash": "$2b$10$P/JRJG50lb622YopZNL24.hEx3HeiNz0Qke3wHb25mT1Wjn/d0V0G",
       "role": "resident",
       "zoneId": "Z3",
       "workerId": null,
       "favorites": [],
-      "createdAt": "2026-07-29T10:00:56.935Z"
+      "createdAt": "2026-07-29T10:43:14.910Z"
     },
     {
-      "id": "8ba8458b-5255-440f-bff6-eb413a68a318",
+      "id": "d57a2810-fb05-4868-88d4-e93510d8697a",
       "name": "Aisha",
       "email": "aisha@demo.com",
-      "passwordHash": "$2b$10$7oR27ZiMD3uw4MjrbH8X/OQAI1bV4.KHstROHmybpi/R1DV8bJ7L6",
+      "passwordHash": "$2b$10$P/JRJG50lb622YopZNL24.hEx3HeiNz0Qke3wHb25mT1Wjn/d0V0G",
       "role": "worker",
       "zoneId": "Z2",
-      "workerId": "1cba6032-d01d-494c-a146-80a4d116e77c",
+      "workerId": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
       "favorites": [],
-      "createdAt": "2026-06-29T10:00:56.935Z"
+      "createdAt": "2026-06-29T10:43:14.910Z"
     }
   ],
   "zones": [
@@ -75,23 +75,40 @@
   ],
   "needs": [
     {
-      "id": "e7b34dcb-b9af-4661-9a16-9a19e589fe36",
+      "id": "99588de7-1bb0-4b81-af5e-e745c10414c9",
       "skillCategory": "Tailoring & Stitching",
       "description": "2 shalwar suits, light embroidery, need before Eid",
       "budgetRange": "1000-2000",
       "urgency": "pre-eid",
       "zoneId": "Z3",
       "residentName": "Fatima Bibi",
-      "residentUserId": "c4f6dc1b-0f23-4633-8742-449573e60bc9",
+      "residentUserId": "9b450973-1e1a-466b-a845-ad238b9e588a",
       "status": "open",
-      "createdAt": "2026-08-08T08:00:56.935Z",
+      "createdAt": "2026-08-08T08:43:14.910Z",
       "matchedAt": null,
       "matchedBidId": null,
-      "lat": 31.479694826410803,
-      "lng": 74.3401024969179
+      "lat": 31.47739002254155,
+      "lng": 74.34131313641981
     },
     {
-      "id": "9ccd2303-41bb-42ba-ad86-81ab3e277b30",
+      "id": "eafdc0d7-7257-49e9-941b-60f6d4a9ad0e",
+      "skillCategory": "Tailoring & Stitching",
+      "description": "Eid suit alteration — measurements received, sleeves & piping",
+      "budgetRange": "1000-2000",
+      "urgency": "pre-eid",
+      "zoneId": "Z3",
+      "residentName": "Fatima Bibi",
+      "residentUserId": "9b450973-1e1a-466b-a845-ad238b9e588a",
+      "status": "matched",
+      "createdAt": "2026-08-07T10:43:14.911Z",
+      "matchedAt": "2026-08-07T10:43:14.911Z",
+      "matchedBidId": "6ae274d0-4633-4839-af5d-12edced897e3",
+      "jobDone": false,
+      "lat": 31.477316176943702,
+      "lng": 74.34148559162453
+    },
+    {
+      "id": "ddda0806-d3ee-404a-b97e-550592343f8e",
       "skillCategory": "Tailoring & Stitching",
       "description": "Kids Eid clothes — 3 sets, simple stitching",
       "budgetRange": "1000-2000",
@@ -99,14 +116,14 @@
       "zoneId": "Z3",
       "residentName": "Sana",
       "status": "open",
-      "createdAt": "2026-08-08T05:00:56.935Z",
+      "createdAt": "2026-08-08T05:43:14.911Z",
       "matchedAt": null,
       "matchedBidId": null,
-      "lat": 31.47927841400647,
-      "lng": 74.34147488115363
+      "lat": 31.478286413754866,
+      "lng": 74.34099449919164
     },
     {
-      "id": "107c4ec2-26fc-4858-9cd8-c5a1fb37dbad",
+      "id": "71f971f0-b2e8-4a1f-915b-7f98c1ab69a2",
       "skillCategory": "Tailoring & Stitching",
       "description": "Alteration + dupatta work for wedding guest",
       "budgetRange": "500-1000",
@@ -114,14 +131,14 @@
       "zoneId": "Z3",
       "residentName": "Hira",
       "status": "open",
-      "createdAt": "2026-08-08T02:00:56.935Z",
+      "createdAt": "2026-08-08T02:43:14.911Z",
       "matchedAt": null,
       "matchedBidId": null,
-      "lat": 31.47791597997533,
-      "lng": 74.34125678511289
+      "lat": 31.478169521343272,
+      "lng": 74.34060555223327
     },
     {
-      "id": "93921892-eadf-41ab-8fcf-b05a130155f5",
+      "id": "a31a7bdf-c061-4ea0-9527-1050cd66c205",
       "skillCategory": "Baking & Home Food",
       "description": "Chocolate cake for 12 people this weekend",
       "budgetRange": "2000+",
@@ -129,14 +146,14 @@
       "zoneId": "Z2",
       "residentName": "Omar",
       "status": "open",
-      "createdAt": "2026-08-08T00:00:56.935Z",
+      "createdAt": "2026-08-08T00:43:14.911Z",
       "matchedAt": null,
       "matchedBidId": null,
-      "lat": 31.48129312432759,
-      "lng": 74.33703545090057
+      "lat": 31.481882469730863,
+      "lng": 74.33759938562659
     },
     {
-      "id": "4411e9ba-1b80-46dd-9b5e-2bc3d8f34def",
+      "id": "f8942ed3-845b-48e4-a5ed-d0074bf05916",
       "skillCategory": "Home Tutoring",
       "description": "O-level Physics — 3x/week until exams",
       "budgetRange": "open",
@@ -144,14 +161,14 @@
       "zoneId": "Z1",
       "residentName": "Kashif",
       "status": "matched",
-      "createdAt": "2026-08-05T10:00:56.935Z",
-      "matchedAt": "2026-08-06T10:00:56.935Z",
-      "matchedBidId": "c89c384d-8061-4a57-9415-31599fdec288",
-      "lat": 31.48431200408388,
-      "lng": 74.33254598555573
+      "createdAt": "2026-08-05T10:43:14.911Z",
+      "matchedAt": "2026-08-06T10:43:14.911Z",
+      "matchedBidId": "e4030a95-1edb-4dbc-94da-44f6a18f56b9",
+      "lat": 31.484083117917184,
+      "lng": 74.33198604680675
     },
     {
-      "id": "b3ef4602-6492-429b-bf2d-6e916a848d7d",
+      "id": "7dda704d-9f29-4ccb-b9ca-d228e7faa7f4",
       "skillCategory": "Electrical Work",
       "description": "Ceiling fan replacement + socket fix",
       "budgetRange": "500-1000",
@@ -159,33 +176,67 @@
       "zoneId": "Z4",
       "residentName": "Ali",
       "status": "open",
-      "createdAt": "2026-08-07T16:00:56.935Z",
+      "createdAt": "2026-08-07T16:43:14.911Z",
       "matchedAt": null,
       "matchedBidId": null,
-      "lat": 31.475558019927004,
-      "lng": 74.34713130628101
+      "lat": 31.475779255138665,
+      "lng": 74.34488384765113
     }
   ],
   "workers": [
     {
-      "id": "1cba6032-d01d-494c-a146-80a4d116e77c",
-      "userId": "8ba8458b-5255-440f-bff6-eb413a68a318",
+      "id": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
+      "userId": "d57a2810-fb05-4868-88d4-e93510d8697a",
       "name": "Aisha",
+      "title": "Master Tailor",
       "skillCategory": "Tailoring & Stitching",
       "zoneId": "Z2",
       "availability": "both",
       "bio": "10 years silai, bridal specialty",
       "photoUrl": null,
-      "rating": 4.8,
+      "rating": 4.9,
       "completedJobs": 12,
       "isActive": true,
       "availableThisWeek": true,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.480571244033765,
-      "lng": 74.33591492828481
+      "verified": true,
+      "tags": [
+        "Womenswear",
+        "Bridal",
+        "Alterations"
+      ],
+      "services": [
+        {
+          "name": "Simple Suit Stitching",
+          "detail": "Standard 2-piece shalwar kameez",
+          "price": "Rs. 1,500"
+        },
+        {
+          "name": "Fancy Suit (Embroidery)",
+          "detail": "Intricate designs, heavy fabric",
+          "price": "Rs. 3,500+"
+        },
+        {
+          "name": "Urgent Alterations",
+          "detail": "Same day service",
+          "price": "Rs. 500"
+        }
+      ],
+      "portfolio": [
+        {
+          "title": "Bridal Suit",
+          "tone": "maroon"
+        },
+        {
+          "title": "Eid Collection",
+          "tone": "teal"
+        }
+      ],
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.480697662869282,
+      "lng": 74.33714016509563
     },
     {
-      "id": "01a9c19c-a0b7-4533-932a-3e606ab80739",
+      "id": "df040971-d86c-47e1-9713-2967a2aad7ee",
       "name": "Nadia",
       "skillCategory": "Tailoring & Stitching",
       "zoneId": "Z3",
@@ -195,13 +246,13 @@
       "rating": 4.2,
       "completedJobs": 7,
       "isActive": true,
-      "availableThisWeek": true,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.47802878935452,
-      "lng": 74.34157656859607
+      "availableThisWeek": false,
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.477884383266083,
+      "lng": 74.34008142698708
     },
     {
-      "id": "11da7e63-896d-4ce9-a2eb-99a51f8c3eed",
+      "id": "ae06bf96-7805-4d09-abea-e1d12be8f830",
       "name": "Bilal",
       "skillCategory": "Baking & Home Food",
       "zoneId": "Z2",
@@ -212,12 +263,12 @@
       "completedJobs": 23,
       "isActive": true,
       "availableThisWeek": true,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.47985985469609,
-      "lng": 74.33558021479081
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.480797335325146,
+      "lng": 74.33545611498029
     },
     {
-      "id": "0be83dc0-5b65-4b36-b166-d056df857c2a",
+      "id": "edb479f6-65e8-43af-8b0a-32d7be65265b",
       "name": "Sara",
       "skillCategory": "Tailoring & Stitching",
       "zoneId": "Z3",
@@ -228,12 +279,12 @@
       "completedJobs": 3,
       "isActive": false,
       "availableThisWeek": false,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.47875672090934,
-      "lng": 74.34070722450383
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.478682357021107,
+      "lng": 74.34058221237414
     },
     {
-      "id": "13393c4e-e040-462b-9a8c-4119104dde80",
+      "id": "b968d41d-41e1-4267-8b26-f6c04863e7a2",
       "name": "Imran",
       "skillCategory": "Electrical Work",
       "zoneId": "Z4",
@@ -244,12 +295,12 @@
       "completedJobs": 18,
       "isActive": true,
       "availableThisWeek": true,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.475477705255493,
-      "lng": 74.34654291393807
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.475162966938367,
+      "lng": 74.34654636170855
     },
     {
-      "id": "1c492ab7-8120-4bcc-bc5c-05444a74508f",
+      "id": "3890669e-418a-46c8-9015-01e0f4f09cb3",
       "name": "Zara",
       "skillCategory": "Home Tutoring",
       "zoneId": "Z1",
@@ -260,52 +311,53 @@
       "completedJobs": 31,
       "isActive": true,
       "availableThisWeek": true,
-      "registeredAt": "2026-06-29T10:00:56.935Z",
-      "lat": 31.482655845682597,
-      "lng": 74.33123961536006
+      "registeredAt": "2026-06-29T10:43:14.910Z",
+      "lat": 31.48297960961239,
+      "lng": 74.33291813988107
     }
   ],
   "bids": [
     {
-      "id": "9cfd31d2-5f61-453c-ba2a-c8db4cb4f34a",
-      "needId": "e7b34dcb-b9af-4661-9a16-9a19e589fe36",
-      "workerId": "1cba6032-d01d-494c-a146-80a4d116e77c",
-      "priceRs": 1500,
-      "timelineDays": 4,
-      "note": "JWT bid test",
-      "status": "pending",
-      "createdAt": "2026-08-08T10:03:57.437Z"
-    },
-    {
-      "id": "c89c384d-8061-4a57-9415-31599fdec288",
-      "needId": "4411e9ba-1b80-46dd-9b5e-2bc3d8f34def",
-      "workerId": "1c492ab7-8120-4bcc-bc5c-05444a74508f",
+      "id": "e4030a95-1edb-4dbc-94da-44f6a18f56b9",
+      "needId": "f8942ed3-845b-48e4-a5ed-d0074bf05916",
+      "workerId": "3890669e-418a-46c8-9015-01e0f4f09cb3",
       "priceRs": 4500,
       "timelineDays": 30,
       "note": "Past papers included",
       "status": "accepted",
-      "createdAt": "2026-08-06T10:00:56.935Z"
+      "createdAt": "2026-08-06T10:43:14.911Z"
+    },
+    {
+      "id": "6ae274d0-4633-4839-af5d-12edced897e3",
+      "needId": "eafdc0d7-7257-49e9-941b-60f6d4a9ad0e",
+      "workerId": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
+      "priceRs": 1800,
+      "timelineDays": 4,
+      "note": "Bridal specialty finish",
+      "status": "accepted",
+      "createdAt": "2026-08-06T10:43:14.911Z"
     }
   ],
   "zoneStatus": [
     {
-      "id": "ccad35a7-b745-416d-8629-a28a68d6fa34",
+      "id": "a7e0bb1f-599d-4dc1-ab08-18f1a6fadb4d",
       "zoneId": "Z3",
       "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
+      "gapLevel": "red",
       "openNeedsCount": 3,
-      "registeredWorkersCount": 1,
-      "bidResponseRate": 0.333,
+      "registeredWorkersCount": 0,
+      "bidResponseRate": 0,
       "seasonFlag": "pre-eid",
-      "aiReasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "aiAction": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
+      "aiReasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "aiAction": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
       "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (2 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
       "communityHandled": false,
-      "lastAnalyzed": "2026-08-08T10:28:00.934Z"
+      "lastAnalyzed": "2026-08-08T10:47:42.688Z"
     },
     {
-      "id": "20ffe1b0-e1c9-43a8-a1af-17a8d40746ce",
+      "id": "cf32c2a8-da68-4a6e-95d5-ecae0f52c68d",
       "zoneId": "Z2",
       "skillCategory": "Baking & Home Food",
       "gapLevel": "green",
@@ -315,13 +367,14 @@
       "seasonFlag": "pre-eid",
       "aiReasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
       "aiAction": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
+      "confidence": "medium",
+      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
+      "agentSource": "heuristic",
       "communityHandled": false,
-      "lastAnalyzed": "2026-08-08T10:28:00.946Z"
+      "lastAnalyzed": "2026-08-08T10:47:42.690Z"
     },
     {
-      "id": "5e6f31e1-1bbd-4260-a008-e60d5a9ec909",
+      "id": "f0967d0f-b4c8-4bf5-917a-ec457086caac",
       "zoneId": "Z1",
       "skillCategory": "Home Tutoring",
       "gapLevel": "green",
@@ -332,12 +385,13 @@
       "aiReasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
       "aiAction": "Keep monitoring; no mobilization needed.",
       "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far).",
+      "agentSource": "heuristic",
       "communityHandled": false,
-      "lastAnalyzed": "2026-08-08T10:28:00.960Z"
+      "lastAnalyzed": "2026-08-08T10:47:42.693Z"
     },
     {
-      "id": "a3c56598-6f4c-447d-939c-495a8fe94f9c",
+      "id": "07952ad2-3d89-47c4-aef7-1ae8dbbb3920",
       "zoneId": "Z4",
       "skillCategory": "Electrical Work",
       "gapLevel": "green",
@@ -347,13 +401,14 @@
       "seasonFlag": "normal",
       "aiReasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
       "aiAction": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
+      "confidence": "medium",
+      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
+      "agentSource": "heuristic",
       "communityHandled": false,
-      "lastAnalyzed": "2026-08-08T10:28:00.949Z"
+      "lastAnalyzed": "2026-08-08T10:47:42.691Z"
     },
     {
-      "id": "65405c19-9209-45c1-ac16-654d5108aaee",
+      "id": "79ae5c5b-37ab-4f51-a42b-9a889a7b1f98",
       "zoneId": "Z2",
       "skillCategory": "Tailoring & Stitching",
       "gapLevel": "green",
@@ -364,126 +419,94 @@
       "aiReasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
       "aiAction": "Keep monitoring; no mobilization needed.",
       "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far).",
+      "agentSource": "heuristic",
       "communityHandled": false,
-      "lastAnalyzed": "2026-08-08T10:28:00.958Z"
+      "lastAnalyzed": "2026-08-08T10:47:42.692Z"
     }
   ],
   "alerts": [
     {
-      "id": "3db9be08-e745-4317-a52b-bdcb5b9f1e13",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "whatsappNotice": null,
-      "isActive": true,
-      "createdAt": "2026-08-08T10:28:00.942Z",
-      "resolvedAt": null
-    },
-    {
-      "id": "276dbaa9-3a7c-4d2d-a833-9fddc1594478",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:23:00.922Z",
-      "resolvedAt": "2026-08-08T10:28:00.934Z"
-    },
-    {
-      "id": "32d226e4-c783-455a-9c6c-bf07e831cb69",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:18:00.909Z",
-      "resolvedAt": "2026-08-08T10:23:00.921Z"
-    },
-    {
-      "id": "7452ab2a-b832-4499-af44-0ac53da57400",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:13:00.911Z",
-      "resolvedAt": "2026-08-08T10:18:00.908Z"
-    },
-    {
-      "id": "f906dd9e-b8c9-4194-a75e-3a052ca7779c",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:08:15.958Z",
-      "resolvedAt": "2026-08-08T10:13:00.906Z"
-    },
-    {
-      "id": "de43e3f0-a541-4557-9782-75a31bbb1d53",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:04:14.193Z",
-      "resolvedAt": "2026-08-08T10:08:15.957Z"
-    },
-    {
-      "id": "ea7fba2f-d2ac-4622-b4d8-43aa044cf6f1",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "whatsappNotice": null,
-      "isActive": false,
-      "createdAt": "2026-08-08T10:03:57.443Z",
-      "resolvedAt": "2026-08-08T10:04:14.192Z"
-    },
-    {
-      "id": "5484f7a3-a299-4335-ace7-fae54ecb3b6a",
+      "id": "f31ccc00-6a45-4487-82a2-7d3a3649c95c",
       "zoneId": "Z3",
       "skillCategory": "Tailoring & Stitching",
       "gapLevel": "red",
-      "reasoning": "3 open requests with only 1 available worker(s) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
       "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
       "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (2 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
+      "whatsappNotice": "📢 Gali 5–7 mein Tailoring & Stitching ki zaroorat hai — 3 families ke orders pending hain aur response slow hai (pre-eid). Agar aap ya aap ke mohalle mein koi yeh kaam karte hain, Hunar Naqsha par register karen ya yeh message share karen.",
+      "isActive": true,
+      "createdAt": "2026-08-08T10:47:42.689Z",
+      "resolvedAt": null
+    },
+    {
+      "id": "23d0cb62-2f1b-4201-a5d4-86425af9b282",
+      "zoneId": "Z3",
+      "skillCategory": "Tailoring & Stitching",
+      "gapLevel": "red",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
       "whatsappNotice": "📢 Gali 5–7 mein Tailoring & Stitching ki zaroorat hai — 3 families ke orders pending hain aur response slow hai (pre-eid). Agar aap ya aap ke mohalle mein koi yeh kaam karte hain, Hunar Naqsha par register karen ya yeh message share karen.",
       "isActive": false,
-      "createdAt": "2026-08-08T10:00:56.939Z",
-      "resolvedAt": "2026-08-08T10:03:57.441Z"
+      "createdAt": "2026-08-08T10:43:15.213Z",
+      "resolvedAt": "2026-08-08T10:47:42.688Z"
+    },
+    {
+      "id": "9a9962ac-8521-4518-b4c5-11124df405b5",
+      "zoneId": "Z3",
+      "skillCategory": "Tailoring & Stitching",
+      "gapLevel": "red",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
+      "whatsappNotice": "📢 Gali 5–7 mein Tailoring & Stitching ki zaroorat hai — 3 families ke orders pending hain aur response slow hai (pre-eid). Agar aap ya aap ke mohalle mein koi yeh kaam karte hain, Hunar Naqsha par register karen ya yeh message share karen.",
+      "isActive": false,
+      "createdAt": "2026-08-08T10:43:14.914Z",
+      "resolvedAt": "2026-08-08T10:43:15.212Z"
     }
   ],
-  "ratings": [],
+  "ratings": [
+    {
+      "id": "5302a257-c9a7-4b53-8460-61c4cb638b7e",
+      "workerId": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
+      "needId": "eafdc0d7-7257-49e9-941b-60f6d4a9ad0e",
+      "bidId": "6ae274d0-4633-4839-af5d-12edced897e3",
+      "stars": 5,
+      "comment": "Aisha baji ne buhat achi stitching ki. Dupatta ka kaam perfect tha!",
+      "ratedAt": "2026-08-03T10:43:14.911Z",
+      "reviewerName": "Sara M.",
+      "reviewerZone": "Gali 5–7"
+    },
+    {
+      "id": "05c6e468-f59f-429d-a8f9-2f04a9fb5c04",
+      "workerId": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
+      "needId": "9977130c-4f8d-4af9-97fc-4043bb1b6893",
+      "bidId": "2fbbe8b9-54d6-480b-a843-f2b229f3ffe9",
+      "stars": 5,
+      "comment": "On time for Eid suits. Trustworthy and careful with chiffon.",
+      "ratedAt": "2026-07-27T10:43:14.911Z",
+      "reviewerName": "Hina Ali",
+      "reviewerZone": "Gali 3–4"
+    },
+    {
+      "id": "498c4c66-d0a4-4b58-a895-4f0537e1a812",
+      "workerId": "329c7a27-2a2f-4385-b8df-cd2eec8b0f51",
+      "needId": "e37593fd-7d09-4e19-86f2-5a45da254f3c",
+      "bidId": "696dd026-2e55-41ea-b673-deafa07e8fdb",
+      "stars": 5,
+      "comment": "Bridal finishing was excellent. Will rehire.",
+      "ratedAt": "2026-07-19T10:43:14.911Z",
+      "reviewerName": "Mehwish",
+      "reviewerZone": "Main Market"
+    }
+  ],
   "seasonalContext": [
     {
       "id": 1,
@@ -512,282 +535,7 @@
   ],
   "aiHistory": [
     {
-      "id": "1b7bb2f0-21d6-4c5b-9d72-82de7cd810da",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:28:00.960Z"
-    },
-    {
-      "id": "57e0025a-b2d9-489f-abc3-a8f1a7d99270",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:28:00.958Z"
-    },
-    {
-      "id": "f52331c4-5574-41b4-b880-202a8cec8b1c",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:28:00.949Z"
-    },
-    {
-      "id": "9479f202-e4f9-4f42-8d22-9abe893cea37",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:28:00.946Z"
-    },
-    {
-      "id": "5797c711-61ed-4fd0-9d4c-d12b1c8a30cd",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:28:00.934Z"
-    },
-    {
-      "id": "14de5948-7d5b-41d1-ba92-1a6710250ea0",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:23:00.928Z"
-    },
-    {
-      "id": "fcc9e084-0659-472c-969b-c50d2fbd6780",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:23:00.926Z"
-    },
-    {
-      "id": "aebb12dd-f1a8-425e-b908-4d4540db196e",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:23:00.925Z"
-    },
-    {
-      "id": "caead832-f672-47f9-91e8-031e6545da74",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:23:00.924Z"
-    },
-    {
-      "id": "c33d79a4-1cff-4bea-a360-6bf4b0402928",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:23:00.921Z"
-    },
-    {
-      "id": "6c50ad53-537d-4408-9e92-5c108ea08864",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:18:00.916Z"
-    },
-    {
-      "id": "01b690b1-a635-4d3b-8b79-d615b3f01d39",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:18:00.913Z"
-    },
-    {
-      "id": "7369fc73-822d-43bf-92dc-71be8595c308",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:18:00.912Z"
-    },
-    {
-      "id": "9974c8bd-896b-4780-9437-129f10844843",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:18:00.911Z"
-    },
-    {
-      "id": "ab08f7ce-09a2-4b7f-a15d-97d9621db31e",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:18:00.908Z"
-    },
-    {
-      "id": "bd942114-e8d6-400b-8b3b-90e25750f6fb",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:13:00.924Z"
-    },
-    {
-      "id": "9417e463-b1ad-406c-97b6-4bcabd7c7665",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:13:00.921Z"
-    },
-    {
-      "id": "753fcac5-3cb1-4a36-8924-b846e5e1a778",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:13:00.918Z"
-    },
-    {
-      "id": "d5fe4cd7-8b15-42e8-b594-e02fc5dea3b7",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:13:00.914Z"
-    },
-    {
-      "id": "8485ff3a-1f3c-4a99-b836-9a37191ba0f2",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:13:00.906Z"
-    },
-    {
-      "id": "a217a5e9-8a6a-4e69-bbb2-a68167526805",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "createdAt": "2026-08-08T10:08:15.982Z"
-    },
-    {
-      "id": "32c495ac-d93a-4a4b-8f2b-290cae76261e",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "createdAt": "2026-08-08T10:08:15.977Z"
-    },
-    {
-      "id": "3d4c70ec-9f4b-4b1e-961b-7e4c089475df",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "createdAt": "2026-08-08T10:08:15.975Z"
-    },
-    {
-      "id": "e66e69a6-3f36-449a-bf49-038455bf1847",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "createdAt": "2026-08-08T10:08:15.962Z"
-    },
-    {
-      "id": "87dafd85-eb3a-44da-a666-af3a359e3c68",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "high",
-      "confidenceWhy": "Signals agree strongly: open needs, bid response, and season context all point the same way.",
-      "createdAt": "2026-08-08T10:08:15.957Z"
-    },
-    {
-      "id": "6827c06e-f915-4e41-84c1-9a7f26c42dad",
+      "id": "8b1e90ed-fc55-449e-8ace-0c6911c12b95",
       "zoneId": "Z1",
       "skillCategory": "Home Tutoring",
       "gapLevel": "green",
@@ -795,10 +543,11 @@
       "action": "Keep monitoring; no mobilization needed.",
       "confidence": "high",
       "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "createdAt": "2026-08-08T10:04:14.201Z"
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:47:42.693Z"
     },
     {
-      "id": "f557ea57-5141-48be-a1a8-4528e748fc3e",
+      "id": "581f4f20-1418-4300-8722-90fcf959917b",
       "zoneId": "Z2",
       "skillCategory": "Tailoring & Stitching",
       "gapLevel": "green",
@@ -806,10 +555,11 @@
       "action": "Keep monitoring; no mobilization needed.",
       "confidence": "high",
       "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "createdAt": "2026-08-08T10:04:14.199Z"
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:47:42.692Z"
     },
     {
-      "id": "6575b1a9-bc2a-4622-87de-35c3ca2b89d1",
+      "id": "2d556d64-d623-4b7b-af85-f0780565f9c6",
       "zoneId": "Z4",
       "skillCategory": "Electrical Work",
       "gapLevel": "green",
@@ -817,10 +567,11 @@
       "action": "No action required.",
       "confidence": "medium",
       "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "createdAt": "2026-08-08T10:04:14.197Z"
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:47:42.691Z"
     },
     {
-      "id": "9fa9046d-201e-4985-8ee4-f75049258b0c",
+      "id": "8adc918f-e438-4b90-8bd5-607e7e0d4cef",
       "zoneId": "Z2",
       "skillCategory": "Baking & Home Food",
       "gapLevel": "green",
@@ -828,117 +579,164 @@
       "action": "No action required.",
       "confidence": "medium",
       "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "createdAt": "2026-08-08T10:04:14.195Z"
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:47:42.690Z"
     },
     {
-      "id": "e6946b24-a751-45d6-be30-dfa9c4b636eb",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (2 so far).",
-      "createdAt": "2026-08-08T10:04:14.192Z"
-    },
-    {
-      "id": "2a1149f2-e6c2-4dca-8e4d-e63a1b489121",
-      "zoneId": "Z3",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "yellow",
-      "reasoning": "3 open needs vs 1 available worker(s) while season demand is elevated (3x). Bid response rate is 33%. Individually manageable, but the combination signals a gap forming.",
-      "action": "Nudge nearby workers to bid on open needs and invite one more registration in this skill.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (1 so far).",
-      "createdAt": "2026-08-08T10:03:57.441Z"
-    },
-    {
-      "id": "0dcd66cc-8c57-4879-860e-b935433766c4",
-      "zoneId": "Z2",
-      "skillCategory": "Tailoring & Stitching",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
-      "createdAt": "2026-08-08T10:00:56.950Z"
-    },
-    {
-      "id": "cd646cc3-35f8-42cb-815d-5a78cff29dbf",
-      "zoneId": "Z4",
-      "skillCategory": "Electrical Work",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (0 so far).",
-      "createdAt": "2026-08-08T10:00:56.946Z"
-    },
-    {
-      "id": "934b3683-fdee-478b-8a71-4d3bf88decfe",
-      "zoneId": "Z1",
-      "skillCategory": "Home Tutoring",
-      "gapLevel": "green",
-      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
-      "action": "Keep monitoring; no mobilization needed.",
-      "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
-      "createdAt": "2026-08-08T10:00:56.943Z"
-    },
-    {
-      "id": "4189fd62-7de5-4b86-903e-8a98e94ed91a",
-      "zoneId": "Z2",
-      "skillCategory": "Baking & Home Food",
-      "gapLevel": "green",
-      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
-      "action": "No action required.",
-      "confidence": "medium",
-      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (0 so far).",
-      "createdAt": "2026-08-08T10:00:56.941Z"
-    },
-    {
-      "id": "95c809a1-ce11-404c-ab11-aa8d88fd5e7a",
+      "id": "9cd2fcf5-a221-418a-a9ba-72b4f8ca3b81",
       "zoneId": "Z3",
       "skillCategory": "Tailoring & Stitching",
       "gapLevel": "red",
-      "reasoning": "3 open requests with only 1 available worker(s) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
       "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
       "confidence": "high",
-      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
-      "createdAt": "2026-08-08T10:00:56.938Z"
-    }
-  ],
-  "messages": [],
-  "notifications": [
-    {
-      "id": "c1a9ad36-f187-4e75-aee2-ee1f4829d494",
-      "userId": "c4f6dc1b-0f23-4633-8742-449573e60bc9",
-      "type": "bid",
-      "title": "New bid on your need",
-      "body": "Aisha offered Rs 1500 — 4 day(s).",
-      "link": "/needs/e7b34dcb-b9af-4661-9a16-9a19e589fe36",
-      "read": false,
-      "createdAt": "2026-08-08T10:03:57.439Z"
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (2 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:47:42.688Z"
     },
     {
-      "id": "960b3231-d359-459b-ae8e-33c9cdde0791",
-      "userId": "c4f6dc1b-0f23-4633-8742-449573e60bc9",
+      "id": "0952c2da-4523-4b3e-8dbc-611d95f8fe24",
+      "zoneId": "Z3",
+      "skillCategory": "Tailoring & Stitching",
+      "gapLevel": "red",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (1 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:15.212Z"
+    },
+    {
+      "id": "f2512028-f333-450d-a578-3eb437ca06cb",
+      "zoneId": "Z2",
+      "skillCategory": "Tailoring & Stitching",
+      "gapLevel": "green",
+      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is pre-eid, but current matching looks stable.",
+      "action": "Keep monitoring; no mobilization needed.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:14.917Z"
+    },
+    {
+      "id": "48b031d0-3938-4484-b4ef-39a408c556ed",
+      "zoneId": "Z4",
+      "skillCategory": "Electrical Work",
+      "gapLevel": "green",
+      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
+      "action": "No action required.",
+      "confidence": "medium",
+      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (0 so far).",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:14.916Z"
+    },
+    {
+      "id": "0c2c30b7-8cca-4f65-a45e-9d3994629463",
+      "zoneId": "Z1",
+      "skillCategory": "Home Tutoring",
+      "gapLevel": "green",
+      "reasoning": "Supply is covering demand: 1 available worker(s) for 0 open need(s) with healthy bid response (100%). Season flag is normal, but current matching looks stable.",
+      "action": "Keep monitoring; no mobilization needed.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far).",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:14.916Z"
+    },
+    {
+      "id": "6f7ff2b6-79ae-44da-927a-05afcf3dab9e",
+      "zoneId": "Z2",
+      "skillCategory": "Baking & Home Food",
+      "gapLevel": "green",
+      "reasoning": "Zone looks balanced for now (1 open / 1 available workers, response 0%).",
+      "action": "No action required.",
+      "confidence": "medium",
+      "confidenceWhy": "Confidence is medium because fewer than 3 historical analyses for this skill×zone (0 so far).",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:14.915Z"
+    },
+    {
+      "id": "80092822-21d7-4469-90ca-6692757ba820",
+      "zoneId": "Z3",
+      "skillCategory": "Tailoring & Stitching",
+      "gapLevel": "red",
+      "reasoning": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined with pre-eid demand (~3x) and Eid in 11 days, this is an acute shortage forming now — not after peak.",
+      "action": "Share a community notice now to recruit 1–2 more workers in this zone before demand peaks.",
+      "confidence": "high",
+      "confidenceWhy": "Confidence is high because fewer than 3 historical analyses for this skill×zone (0 so far); 1 worker(s) marked unavailable this week and excluded from supply.",
+      "agentSource": "heuristic",
+      "createdAt": "2026-08-08T10:43:14.913Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "dea10a35-e6b4-4b34-87b1-a91d40658d7b",
+      "needId": "eafdc0d7-7257-49e9-941b-60f6d4a9ad0e",
+      "senderUserId": "d57a2810-fb05-4868-88d4-e93510d8697a",
+      "senderRole": "worker",
+      "senderName": "Aisha",
+      "body": "Salam Fatima! I have received your measurements. Do you want the sleeves to be full length or three-quarters?",
+      "createdAt": "2026-08-08T07:43:14.911Z"
+    },
+    {
+      "id": "b47237e7-0e3b-4654-97ec-46bfbc8b207a",
+      "needId": "eafdc0d7-7257-49e9-941b-60f6d4a9ad0e",
+      "senderUserId": "9b450973-1e1a-466b-a845-ad238b9e588a",
+      "senderRole": "resident",
+      "senderName": "Fatima Bibi",
+      "body": "Walaikum Assalam. Full length please, with the simple piping we discussed.",
+      "createdAt": "2026-08-08T08:13:14.911Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "09142caa-481c-4ac1-a5db-b2281159f876",
+      "userId": "9b450973-1e1a-466b-a845-ad238b9e588a",
+      "type": "gap",
+      "title": "Acute shortage · Tailoring & Stitching",
+      "body": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined wi",
+      "link": "/alerts/f31ccc00-6a45-4487-82a2-7d3a3649c95c",
+      "read": false,
+      "createdAt": "2026-08-08T10:47:42.689Z"
+    },
+    {
+      "id": "8c4df64f-9ba4-4d73-aafc-d51f819d7f2f",
+      "userId": "9b450973-1e1a-466b-a845-ad238b9e588a",
+      "type": "gap",
+      "title": "Acute shortage · Tailoring & Stitching",
+      "body": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined wi",
+      "link": "/alerts/23d0cb62-2f1b-4201-a5d4-86425af9b282",
+      "read": false,
+      "createdAt": "2026-08-08T10:43:15.214Z"
+    },
+    {
+      "id": "6bffbb18-1e32-4e83-baf5-afd000870a3d",
+      "userId": "9b450973-1e1a-466b-a845-ad238b9e588a",
+      "type": "gap",
+      "title": "Acute shortage · Tailoring & Stitching",
+      "body": "3 open requests with only 0 available worker(s) (1 more registered but marked unavailable) and bid response rate 0% in 48 hours. Combined wi",
+      "link": "/alerts/9a9962ac-8521-4518-b4c5-11124df405b5",
+      "read": false,
+      "createdAt": "2026-08-08T10:43:14.915Z"
+    },
+    {
+      "id": "16789b65-e873-4289-b8cc-7a572ce98aec",
+      "userId": "9b450973-1e1a-466b-a845-ad238b9e588a",
       "type": "welcome",
       "title": "Welcome to Hunar Naqsha",
       "body": "Post a need — workers bid their own price. AI watches your gali for skill gaps.",
       "read": false,
       "link": "/needs/new",
-      "createdAt": "2026-08-08T09:00:56.935Z"
+      "createdAt": "2026-08-08T09:43:14.911Z"
     },
     {
-      "id": "cc012c70-39e5-412b-a579-e7ec8d7a78b6",
-      "userId": "8ba8458b-5255-440f-bff6-eb413a68a318",
+      "id": "bb00e95c-9bf8-4821-a268-37309ce4686a",
+      "userId": "d57a2810-fb05-4868-88d4-e93510d8697a",
       "type": "welcome",
       "title": "Worker account ready",
       "body": "Nearby open jobs for your skill will show on your Jobs tab.",
       "read": false,
       "link": "/app",
-      "createdAt": "2026-08-08T09:00:56.935Z"
+      "createdAt": "2026-08-08T09:43:14.911Z"
     }
   ]
 }

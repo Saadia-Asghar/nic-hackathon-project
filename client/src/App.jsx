@@ -12,8 +12,10 @@ import AlertDetail from "./pages/AlertDetail";
 import WorkerProfile from "./pages/WorkerProfile";
 import Discover from "./pages/Discover";
 import Chat from "./pages/Chat";
+import Chats from "./pages/Chats";
 import MapPage from "./pages/MapPage";
 import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="/app" element={<AppHome />} />
           <Route path="/discover" element={<Discover />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/chats" element={<Chats />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/needs/new" element={<PostNeed />} />
           <Route path="/needs/:id" element={<NeedDetail />} />

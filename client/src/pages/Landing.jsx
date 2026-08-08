@@ -33,7 +33,7 @@ export default function Landing() {
           <div className="text-xs uppercase tracking-[0.14em] text-white/55 font-semibold mb-2">
             Invisible workers. Visible now.
           </div>
-          <div className="font-display text-[1.45rem] leading-tight mb-3">
+          <div className="font-display text-white text-[1.45rem] leading-tight mb-3">
             Apni gali ka hunar,<br />apni marzi ka daam
           </div>
           <p className="text-sm text-white/70 m-0 leading-relaxed">
@@ -74,7 +74,7 @@ export default function Landing() {
             [MapPinned, "AI watches gaps", "Needs + season + bid silence → shortage alert for the mohalla."],
           ].map(([Icon, t, d], i) => (
             <div key={t} className="flex gap-3">
-              <div className="step-dot">{i + 1}</div>
+              <div className="how-step">{i + 1}</div>
               <div>
                 <div className="font-semibold text-sm flex items-center gap-1.5">
                   <Icon size={14} /> {t}

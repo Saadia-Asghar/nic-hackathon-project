@@ -9,26 +9,53 @@ export default function ResidentDashboard() {
   const { user } = useAuth();
   const [needs, setNeeds] = useState([]);
   const [alert, setAlert] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [forecast, setForecast] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const [n, a] = await Promise.all([api.residentNeeds(user.id), api.alerts()]);
+    const [n, a, z, f] = await Promise.all([
+      api.residentNeeds(user.id),
+      api.alerts(),
+      api.zones(),
+      api.forecast(),
+    ]);
     setNeeds(n);
-    setAlert(a[0] || null);
+    const mine =
+      a.find((x) => x.zoneId === (user.zoneId || "Z3") && x.gapLevel === "red") ||
+      a.find((x) => x.zoneId === (user.zoneId || "Z3")) ||
+      a.find((x) => x.gapLevel === "red") ||
+      a[0] ||
+      null;
+    setAlert(mine);
+    setZones(z);
+    setForecast(f.slice(0, 2));
     const firstOpen = n.find((x) => x.status === "open" && (x.bids?.length || x.bidCount));
     if (firstOpen) setExpanded({ [firstOpen.id]: true });
   }
 
   useEffect(() => {
     load().catch((e) => setErr(e.message));
-  }, [user.id]);
+  }, [user.id, user.zoneId]);
 
   async function accept(bidId) {
     try {
       setBusy(true);
       await api.acceptBid(bidId);
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmDone(needId) {
+    try {
+      setBusy(true);
+      await api.confirmDone(needId);
       await load();
     } catch (e) {
       setErr(e.message);
@@ -50,7 +77,7 @@ export default function ResidentDashboard() {
         </p>
       </div>
 
-      <Link to="/needs/new" className="cta-post mb-7">
+      <Link to="/needs/new" className="cta-post mb-6">
         <span className="cta-post-icon">
           <Plus size={22} strokeWidth={2.5} />
         </span>
@@ -63,17 +90,74 @@ export default function ResidentDashboard() {
             <div className="text-xs font-bold uppercase tracking-wide opacity-70">AI Alert</div>
             <GapBadge level={alert.gapLevel} />
           </div>
+          <div className="font-semibold text-sm mt-2">
+            {alert.skillCategory} · {alert.zone?.displayName || alert.zoneId}
+          </div>
+          <p className="text-xs text-[var(--muted)] mt-1 mb-0">
+            GapDetectionAgent · {alert.agentSource || "heuristic"} · {alert.confidence || "medium"} confidence
+          </p>
           <p className="text-sm mt-2 mb-3 leading-snug">{alert.reasoning}</p>
-          {alert.whatsappNotice && (
-            <a
-              className="btn btn-accent w-full text-xs"
-              href={whatsappShareUrl(alert.whatsappNotice)}
-              target="_blank"
-              rel="noreferrer"
+          <div className="flex flex-col gap-2">
+            {alert.gapLevel === "red" && alert.whatsappNotice ? (
+              <a
+                className="btn btn-accent w-full text-xs"
+                href={whatsappShareUrl(alert.whatsappNotice)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Share2 size={14} /> Share community notice
+              </a>
+            ) : (
+              <Link className="btn btn-ghost w-full text-xs" to={`/zones/${alert.zoneId}`}>
+                See open needs in zone
+              </Link>
+            )}
+            <div className="flex gap-2">
+              <Link className="btn btn-ghost flex-1 text-xs py-2" to={`/alerts/${alert.id}`}>
+                Why this alert
+              </Link>
+              <Link className="btn btn-ghost flex-1 text-xs py-2" to="/signup">
+                Invite a worker
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-display text-lg m-0">Mohalla pulse</h2>
+        <Link to="/map" className="text-xs font-semibold text-[var(--teal)] no-underline">
+          Open map →
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 mb-5">
+        {zones.map((z) => (
+          <Link key={z.id} to={`/zones/${z.id}`} className="no-underline text-inherit">
+            <div className={`card p-3 min-h-[96px] border gap-${z.gapLevel}`}>
+              <div className="font-semibold text-sm">{z.displayName}</div>
+              <div className="mt-2">
+                <GapBadge level={z.gapLevel} />
+              </div>
+              <div className="text-[11px] mt-2 opacity-85">
+                {z.openNeedsCount} open
+                {z.topShortageSkill ? ` · ${z.topShortageSkill.split(" ")[0]}` : ""}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {forecast.length > 0 && (
+        <div className="card p-4 mb-5">
+          <div className="text-sm font-semibold mb-2">Coming demand</div>
+          {forecast.map((f) => (
+            <div
+              key={f.skillCategory}
+              className="text-sm text-[var(--muted)] py-1.5 border-b border-[var(--line)] last:border-0"
             >
-              <Share2 size={14} /> Share on WhatsApp
-            </a>
-          )}
+              {f.headline || f.skillCategory}
+            </div>
+          ))}
         </div>
       )}
 
@@ -150,10 +234,26 @@ export default function ResidentDashboard() {
                 </div>
               )}
 
-              {["matched", "completed"].includes(n.status) && (
-                <Link className="btn btn-primary w-full mt-1 text-sm" to={`/needs/${n.id}/chat`}>
-                  Open safe chat
-                </Link>
+              {n.status === "matched" && (
+                <div className="flex flex-col gap-2 mt-1">
+                  <Link className="btn btn-primary w-full text-sm" to={`/needs/${n.id}/chat`}>
+                    Open safe chat
+                  </Link>
+                  {!n.jobDone ? (
+                    <button
+                      type="button"
+                      className="btn btn-outline-teal w-full text-sm"
+                      disabled={busy}
+                      onClick={() => confirmDone(n.id)}
+                    >
+                      Confirm job done
+                    </button>
+                  ) : (
+                    <Link className="btn btn-ghost w-full text-sm" to={`/needs/${n.id}`}>
+                      Rate the worker →
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
           );

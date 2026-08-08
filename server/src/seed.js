@@ -99,15 +99,27 @@ export async function seed() {
       id: w.aisha,
       userId: userAisha,
       name: "Aisha",
+      title: "Master Tailor",
       skillCategory: "Tailoring & Stitching",
       zoneId: "Z2",
       availability: "both",
       bio: "10 years silai, bridal specialty",
       photoUrl: null,
-      rating: 4.8,
+      rating: 4.9,
       completedJobs: 12,
       isActive: true,
       availableThisWeek: true,
+      verified: true,
+      tags: ["Womenswear", "Bridal", "Alterations"],
+      services: [
+        { name: "Simple Suit Stitching", detail: "Standard 2-piece shalwar kameez", price: "Rs. 1,500" },
+        { name: "Fancy Suit (Embroidery)", detail: "Intricate designs, heavy fabric", price: "Rs. 3,500+" },
+        { name: "Urgent Alterations", detail: "Same day service", price: "Rs. 500" },
+      ],
+      portfolio: [
+        { title: "Bridal Suit", tone: "maroon" },
+        { title: "Eid Collection", tone: "teal" },
+      ],
       registeredAt: daysAgo(40),
       ...place("Z2"),
     },
@@ -122,7 +134,7 @@ export async function seed() {
       rating: 4.2,
       completedJobs: 7,
       isActive: true,
-      availableThisWeek: true,
+      availableThisWeek: false,
       registeredAt: daysAgo(40),
       ...place("Z3"),
     },
@@ -194,7 +206,9 @@ export async function seed() {
   const n4 = uuid();
   const n5 = uuid();
   const n6 = uuid();
+  const n7 = uuid();
   const matchedBid = uuid();
+  const fatimaMatchedBid = uuid();
 
   db.needs = [
     {
@@ -210,6 +224,22 @@ export async function seed() {
       createdAt: hoursAgo(2),
       matchedAt: null,
       matchedBidId: null,
+      ...place("Z3"),
+    },
+    {
+      id: n7,
+      skillCategory: "Tailoring & Stitching",
+      description: "Eid suit alteration — measurements received, sleeves & piping",
+      budgetRange: "1000-2000",
+      urgency: "pre-eid",
+      zoneId: "Z3",
+      residentName: "Fatima Bibi",
+      residentUserId: userFatima,
+      status: "matched",
+      createdAt: daysAgo(1),
+      matchedAt: daysAgo(1),
+      matchedBidId: fatimaMatchedBid,
+      jobDone: false,
       ...place("Z3"),
     },
     {
@@ -294,6 +324,73 @@ export async function seed() {
       note: "Past papers included",
       status: "accepted",
       createdAt: daysAgo(2),
+    },
+    {
+      id: fatimaMatchedBid,
+      needId: n7,
+      workerId: w.aisha,
+      priceRs: 1800,
+      timelineDays: 4,
+      note: "Bridal specialty finish",
+      status: "accepted",
+      createdAt: daysAgo(2),
+    },
+  ];
+
+  db.messages = [
+    {
+      id: uuid(),
+      needId: n7,
+      senderUserId: userAisha,
+      senderRole: "worker",
+      senderName: "Aisha",
+      body: "Salam Fatima! I have received your measurements. Do you want the sleeves to be full length or three-quarters?",
+      createdAt: hoursAgo(3),
+    },
+    {
+      id: uuid(),
+      needId: n7,
+      senderUserId: userFatima,
+      senderRole: "resident",
+      senderName: "Fatima Bibi",
+      body: "Walaikum Assalam. Full length please, with the simple piping we discussed.",
+      createdAt: hoursAgo(2.5),
+    },
+  ];
+
+  db.ratings = [
+    {
+      id: uuid(),
+      workerId: w.aisha,
+      needId: n7,
+      bidId: fatimaMatchedBid,
+      stars: 5,
+      comment: "Aisha baji ne buhat achi stitching ki. Dupatta ka kaam perfect tha!",
+      ratedAt: daysAgo(5),
+      reviewerName: "Sara M.",
+      reviewerZone: "Gali 5–7",
+    },
+    {
+      id: uuid(),
+      workerId: w.aisha,
+      needId: uuid(),
+      bidId: uuid(),
+      stars: 5,
+      comment: "On time for Eid suits. Trustworthy and careful with chiffon.",
+      ratedAt: daysAgo(12),
+      reviewerName: "Hina Ali",
+      reviewerZone: "Gali 3–4",
+    },
+    {
+      id: uuid(),
+      workerId: w.aisha,
+      needId: uuid(),
+      bidId: uuid(),
+      stars: 5,
+      comment: "Bridal finishing was excellent. Will rehire.",
+      ratedAt: daysAgo(20),
+      reviewerName: "Mehwish",
+      reviewerZone: "Main Market",
     },
   ];
 

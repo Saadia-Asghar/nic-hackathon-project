@@ -62,9 +62,11 @@ export const api = {
   messages: (needId) => request(`/needs/${needId}/messages`),
   sendMessage: (needId, body) =>
     request(`/needs/${needId}/messages`, { method: "POST", body: JSON.stringify(body) }),
+  chats: () => request("/chats"),
   alerts: () => request("/ai/alerts"),
   alert: (id) => request(`/ai/alerts/${id}`),
   analyze: (body) => request("/ai/analyze", { method: "POST", body: JSON.stringify(body) }),
+  agentStatus: () => request("/ai/status"),
   markHandled: (zoneId, skill) =>
     request(`/zones/${zoneId}/skills/${encodeURIComponent(skill)}/handle`, { method: "PATCH" }),
   favorites: () => request("/favorites"),

@@ -518,6 +518,31 @@ label {
   border-radius: 24px;
 }
 
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 1.35rem 1.2rem;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(0, 137, 123, 0.35), transparent 50%),
+    linear-gradient(145deg, #1a237e 0%, #12195c 55%, #0d1448 100%);
+  box-shadow: 0 16px 40px rgba(26, 35, 126, 0.28);
+}
+
+.how-step {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--navy);
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
 .cat-chip {
   display: inline-flex;
   align-items: center;

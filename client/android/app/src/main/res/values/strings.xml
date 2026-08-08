@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HunarNaqsha</string>
+    <string name="title_activity_main">HunarNaqsha</string>
+    <string name="package_name">org.hunarnaqsha.app</string>
+    <string name="custom_url_scheme">org.hunarnaqsha.app</string>
+</resources>

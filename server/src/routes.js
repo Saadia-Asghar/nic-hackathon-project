@@ -2,7 +2,7 @@ import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import { store } from "./store.js";
 import { ADJACENT, MAP_CENTER, nowIso, jitter } from "./constants.js";
-import { analyzeZoneSkill, buildForecast } from "./agents.js";
+import { analyzeZoneSkill, buildForecast, agentMode } from "./agents.js";
 import { seed } from "./seed.js";
 import {
   authenticate,
@@ -28,7 +28,16 @@ function zoneCoords(zoneId) {
 }
 
 router.get("/health", (_req, res) => {
-  res.json({ ok: true, product: "Hunar Naqsha", track: "Mohalla Mind" });
+  res.json({
+    ok: true,
+    product: "Hunar Naqsha",
+    track: "Mohalla Mind",
+    agent: agentMode(),
+  });
+});
+
+router.get("/ai/status", (_req, res) => {
+  res.json(agentMode());
 });
 
 router.post("/demo/reset", async (_req, res) => {
@@ -154,6 +163,12 @@ router.get("/resident/:userId/needs", (req, res) => {
       ...n,
       bidCount: db.bids.filter((b) => b.needId === n.id).length,
       zone: db.zones.find((z) => z.id === n.zoneId),
+      bids: db.bids
+        .filter((b) => b.needId === n.id)
+        .map((b) => ({
+          ...b,
+          worker: db.workers.find((w) => w.id === b.workerId),
+        })),
     }));
   res.json(rows);
 });
@@ -374,16 +389,108 @@ router.get("/workers/:id", (req, res) => {
   const workerBids = db.bids.filter((b) => b.workerId === worker.id);
   const ratings = db.ratings.filter((r) => r.workerId === worker.id);
   const trust = computeTrust(worker, ratings);
+
+  // Active matched chat with this worker (for "Send a Message")
+  const matchedNeed = db.needs.find((n) => {
+    if (!["matched", "completed"].includes(n.status) || !n.matchedBidId) return false;
+    const bid = db.bids.find((b) => b.id === n.matchedBidId);
+    return bid && bid.workerId === worker.id;
+  });
+
+  const avg =
+    ratings.length > 0
+      ? Number((ratings.reduce((s, r) => s + r.stars, 0) / ratings.length).toFixed(1))
+      : worker.rating;
+
   res.json({
     ...worker,
     ...trust,
+    rating: avg || worker.rating,
     bids: workerBids,
     zone: db.zones.find((z) => z.id === worker.zoneId),
     pendingBids: workerBids.filter((b) => b.status === "pending").length,
-    reviews: ratings.slice(-8).reverse(),
-    reviewCount: ratings.length,
+    reviews: ratings
+      .slice()
+      .sort((a, b) => (a.ratedAt < b.ratedAt ? 1 : -1))
+      .slice(0, 8),
+    reviewCount: ratings.length || worker.completedJobs || 0,
+    matchedChatNeedId: matchedNeed?.id || null,
+    tags: worker.tags || defaultTags(worker.skillCategory),
+    services: worker.services || defaultServices(worker.skillCategory),
+    portfolio: worker.portfolio || defaultPortfolio(worker.skillCategory),
+    title: worker.title || titleForSkill(worker.skillCategory),
+    verified: worker.verified ?? (worker.completedJobs || 0) >= 5,
   });
 });
+
+function titleForSkill(skill) {
+  const map = {
+    "Tailoring & Stitching": "Master Tailor",
+    "Baking & Home Food": "Home Baker",
+    "Home Tutoring": "Tutor",
+    Beautician: "Beautician",
+    "Electrical Work": "Electrician",
+    Plumbing: "Plumber",
+    Cleaning: "Home Cleaner",
+  };
+  return map[skill] || "Skilled Worker";
+}
+
+function defaultTags(skill) {
+  const map = {
+    "Tailoring & Stitching": ["Womenswear", "Alterations", "Everyday"],
+    "Baking & Home Food": ["Cakes", "Dawat", "Home-style"],
+    "Home Tutoring": ["O/A Levels", "Math", "Physics"],
+    Beautician: ["Bridal", "Mehndi", "Facial"],
+    "Electrical Work": ["Wiring", "Fans", "Sockets"],
+    Plumbing: ["Leak fix", "Install", "Urgent"],
+    Cleaning: ["Deep clean", "Weekly", "Move-out"],
+  };
+  return map[skill] || ["Local", "Trusted"];
+}
+
+function defaultServices(skill) {
+  const map = {
+    "Tailoring & Stitching": [
+      { name: "Simple Suit Stitching", detail: "Standard 2-piece shalwar kameez", price: "Rs. 1,500" },
+      { name: "Fancy Suit (Embroidery)", detail: "Intricate designs, heavy fabric", price: "Rs. 3,500+" },
+      { name: "Urgent Alterations", detail: "Same day service", price: "Rs. 500" },
+    ],
+    "Baking & Home Food": [
+      { name: "Birthday cake (1kg)", detail: "Custom frosting", price: "Rs. 2,500" },
+      { name: "Dawat tray", detail: "Serves 8–10", price: "Rs. 4,000" },
+      { name: "Samosa pack (25)", detail: "Fresh fried", price: "Rs. 800" },
+    ],
+    "Home Tutoring": [
+      { name: "Weekly tutoring", detail: "3 sessions / week", price: "Rs. 4,500" },
+      { name: "Exam crash course", detail: "2 weeks intensive", price: "Rs. 6,000" },
+      { name: "Single session", detail: "90 minutes", price: "Rs. 800" },
+    ],
+  };
+  return (
+    map[skill] || [
+      { name: "Standard service", detail: "Discuss details in chat after match", price: "Open bid" },
+      { name: "Urgent visit", detail: "Same-day when available", price: "Rs. 500+" },
+    ]
+  );
+}
+
+function defaultPortfolio(skill) {
+  const map = {
+    "Tailoring & Stitching": [
+      { title: "Bridal Suit", tone: "maroon" },
+      { title: "Eid Collection", tone: "teal" },
+    ],
+    "Baking & Home Food": [
+      { title: "Chocolate cake", tone: "maroon" },
+      { title: "Dawat trays", tone: "teal" },
+    ],
+  };
+  return map[skill] || [
+    { title: "Recent job", tone: "navy" },
+    { title: "Neighborhood work", tone: "teal" },
+  ];
+}
 
 router.post("/workers", async (req, res) => {
   const { name, skillCategory, zoneId, availability, bio, photoUrl, userId } = req.body || {};
@@ -610,10 +717,51 @@ router.get("/needs/:id/messages", (req, res) => {
   if (!["matched", "completed"].includes(need.status)) {
     return res.status(403).json({ error: "Chat unlocks after a bid is accepted" });
   }
+  const accepted = db.bids.find((b) => b.id === need.matchedBidId);
+  const worker = accepted ? db.workers.find((w) => w.id === accepted.workerId) : null;
+  const zone = db.zones.find((z) => z.id === need.zoneId);
   const messages = (db.messages || [])
     .filter((m) => m.needId === need.id)
     .sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1));
-  res.json({ need, messages });
+  res.json({ need, messages, worker, zone });
+});
+
+router.get("/chats", requireAuth, (req, res) => {
+  const db = store.read();
+  const user = req.user;
+  let needs = [];
+  if (user.role === "resident") {
+    needs = db.needs.filter(
+      (n) =>
+        ["matched", "completed"].includes(n.status) &&
+        (n.residentUserId === user.id || n.residentName === user.name)
+    );
+  } else if (user.role === "worker" && user.workerId) {
+    const myAccepted = new Set(
+      db.bids.filter((b) => b.workerId === user.workerId && b.status === "accepted").map((b) => b.needId)
+    );
+    needs = db.needs.filter((n) => myAccepted.has(n.id) && ["matched", "completed"].includes(n.status));
+  }
+
+  const rows = needs
+    .map((n) => {
+      const accepted = db.bids.find((b) => b.id === n.matchedBidId);
+      const worker = accepted ? db.workers.find((w) => w.id === accepted.workerId) : null;
+      const msgs = (db.messages || []).filter((m) => m.needId === n.id);
+      const last = msgs.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))[0];
+      const partnerName =
+        user.role === "resident" ? worker?.name || "Worker" : n.residentName || "Resident";
+      return {
+        needId: n.id,
+        skillCategory: n.skillCategory,
+        status: n.status,
+        partnerName,
+        preview: last?.body || null,
+        updatedAt: last?.createdAt || n.matchedAt || n.createdAt,
+      };
+    })
+    .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  res.json(rows);
 });
 
 router.post("/needs/:id/messages", (req, res) => {

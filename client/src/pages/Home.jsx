@@ -64,7 +64,7 @@ export default function Home() {
           <div className="text-xs uppercase tracking-[0.14em] text-white/55 font-semibold mb-2">
             Your mohalla pulse
           </div>
-          <div className="font-display text-[1.65rem] leading-tight mb-3">
+          <div className="font-display text-white text-[1.65rem] leading-tight mb-3">
             Apni gali ka hunar,<br />apni marzi ka daam
           </div>
           <div className="grid grid-cols-2 gap-2 mb-4">

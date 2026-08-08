@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Navigation, RefreshCw, Star } from "lucide-react";
-import { api } from "../api";
+import { CheckCircle2, Navigation, RefreshCw, Share2, Star } from "lucide-react";
+import { api, whatsappShareUrl } from "../api";
 import { useAuth } from "../auth";
 import { Shell, UrgencyBadge, mohallaLabel } from "../components";
 
@@ -22,6 +22,7 @@ export default function WorkerDashboard() {
   const [worker, setWorker] = useState(null);
   const [openNeeds, setOpenNeeds] = useState([]);
   const [stats, setStats] = useState(null);
+  const [nearby, setNearby] = useState([]);
   const [err, setErr] = useState("");
 
   async function load() {
@@ -29,14 +30,16 @@ export default function WorkerDashboard() {
       setErr("Worker profile missing. Sign up again as worker.");
       return;
     }
-    const [w, n, s] = await Promise.all([
+    const [w, n, s, d] = await Promise.all([
       api.worker(workerId),
       api.openNeedsForWorker(workerId),
       api.workerStats(workerId),
+      api.demandNearby(workerId),
     ]);
     setWorker(w);
     setOpenNeeds(n);
     setStats(s);
+    setNearby(d);
   }
 
   useEffect(() => {
@@ -52,8 +55,10 @@ export default function WorkerDashboard() {
   }
 
   const bidIds = new Set(stats?.bidNeedIds || []);
+  const pending = (worker?.bids || []).filter((b) => b.status === "pending");
   const visible = openNeeds.filter((n) => !bidIds.has(n.id));
   const rehire = Math.min(99, Math.round(55 + (worker?.rating || 0) * 8 + (worker?.completedJobs || 0)));
+  const available = stats?.availableThisWeek !== false;
 
   return (
     <Shell>
@@ -64,7 +69,7 @@ export default function WorkerDashboard() {
         >
           {(worker?.name || user.name).slice(0, 1)}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="font-display text-[1.35rem] m-0 leading-tight">
             Salam, Ustaad {user.name.split(" ")[0]}!
           </h1>
@@ -72,7 +77,24 @@ export default function WorkerDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-[1.2fr_1fr] gap-2.5 mb-6">
+      <div className="card p-3.5 mb-4 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold">Available this week</div>
+          <div className="text-[11px] text-[var(--muted)]">Off = AI won’t count you in supply</div>
+        </div>
+        <button
+          type="button"
+          className={`btn text-xs py-2 px-3 ${available ? "btn-primary" : "btn-ghost"}`}
+          onClick={async () => {
+            await api.setAvailability(workerId, !available);
+            await load();
+          }}
+        >
+          {available ? "On" : "Off"}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-[1.2fr_1fr] gap-2.5 mb-4">
         <div className="card p-4 flex flex-col justify-center">
           <Star size={18} className="text-[#f9a825] mb-2" fill="#f9a825" />
           <div className="stat-big">{worker?.rating || "—"}</div>
@@ -102,16 +124,46 @@ export default function WorkerDashboard() {
         </div>
       </div>
 
+      <div className="card p-3.5 mb-5 flex justify-between items-center">
+        <div>
+          <div className="text-sm font-semibold">Active bids</div>
+          <div className="text-[11px] text-[var(--muted)]">Max 3 pending at once</div>
+        </div>
+        <div className="font-extrabold text-[var(--navy)] text-xl">
+          {pending.length}/3
+        </div>
+      </div>
+
+      {nearby[0] && (
+        <div className="card p-4 mb-5 border gap-red">
+          <div className="text-xs font-bold uppercase tracking-wide opacity-70">Nearby demand</div>
+          <p className="text-sm mt-2 mb-3">
+            High {nearby[0].skillCategory} demand in {nearby[0].zone?.displayName || nearby[0].zoneId}.
+            Bid if you can take work.
+          </p>
+          {nearby[0].workerNotice && (
+            <a
+              className="btn btn-accent w-full text-xs"
+              href={whatsappShareUrl(nearby[0].workerNotice)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Share2 size={14} /> Share / ping
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-display text-lg m-0">Available Needs</h2>
         <span className="text-xs font-semibold text-[var(--muted)]">
-          {mohallaLabel(worker?.zoneId)} Zone ▾
+          {mohallaLabel(worker?.zoneId)} Zone
         </span>
       </div>
 
       {err && <p className="text-sm text-[var(--red)] mb-3">{err}</p>}
 
-      <div className="space-y-3.5">
+      <div className="space-y-3.5 mb-5">
         {visible.length === 0 && (
           <div className="card p-5 text-sm text-[var(--muted)]">No open needs near you right now.</div>
         )}
@@ -123,6 +175,7 @@ export default function WorkerDashboard() {
               : n.budgetRange.includes("+")
                 ? `${n.budgetRange.replace("+", "")}+ PKR`
                 : `${n.budgetRange.split("-").pop()} PKR`;
+          const canBid = pending.length < 3;
           return (
             <div key={n.id} className="card p-4">
               <div className="flex justify-between items-center mb-2">
@@ -140,14 +193,35 @@ export default function WorkerDashboard() {
                   <div className="text-[11px] text-[var(--muted)]">Budget</div>
                   <div className="font-extrabold text-[var(--navy)]">{budget}</div>
                 </div>
-                <Link className="btn btn-primary text-sm py-2.5 px-4" to={`/needs/${n.id}/bid`}>
-                  Submit Bid
-                </Link>
+                {canBid ? (
+                  <Link className="btn btn-primary text-sm py-2.5 px-4" to={`/needs/${n.id}/bid`}>
+                    Submit Bid
+                  </Link>
+                ) : (
+                  <span className="text-xs text-[var(--muted)] font-semibold">Bid limit reached</span>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {pending.length > 0 && (
+        <>
+          <h2 className="font-display text-lg m-0 mb-2">My pending bids</h2>
+          <div className="space-y-2">
+            {pending.map((b) => (
+              <Link
+                key={b.id}
+                to={`/needs/${b.needId}`}
+                className="card p-3 block no-underline text-inherit text-sm"
+              >
+                Rs.{b.priceRs} · {b.timelineDays} days · Pending
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </Shell>
   );
 }

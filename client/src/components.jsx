@@ -188,10 +188,9 @@ export function TrustRing({ score = 0 }) {
 }
 
 export function JobStepper({ status, jobDone }) {
-  let stage = 0;
-  if (status === "matched" || status === "completed") stage = 1;
-  if (status === "matched" && jobDone) stage = 2;
-  if (status === "completed") stage = 3;
+  let active = 0;
+  if (status === "matched" || status === "completed") active = 1;
+  if (jobDone || status === "completed") active = 2;
 
   const steps = [
     { key: "booked", label: "Booked", icon: "✓" },
@@ -199,14 +198,13 @@ export function JobStepper({ status, jobDone }) {
     { key: "done", label: "Completed", icon: "✓" },
   ];
 
-  const fillPct = stage <= 1 ? 0 : stage === 2 ? 50 : 100;
+  const fillPct = active === 0 ? 0 : active === 1 ? 50 : 100;
 
   return (
     <div className="stepper">
-      <div className="stepper-line-done" style={{ width: `calc(${fillPct}% * 0.68)` }} />
+      <div className="stepper-line-done" style={{ width: `${fillPct * 0.68}%`, left: "16%" }} />
       {steps.map((s, i) => {
-        const n = i + 1;
-        const cls = stage > n ? "done" : stage === n ? "current" : "";
+        const cls = i < active ? "done" : i === active ? "current" : "";
         return (
           <div key={s.key} className={`step ${cls}`}>
             <div className="step-dot">{s.icon}</div>
