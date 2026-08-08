@@ -3,3 +3,8 @@ node_modules
 dist
 build
 .DS_Store
+server/data/hunar.db
+server/data/hunar.db-*
+server/data/hunar.json
+server/data/hunar.json.migrated.bak
+server/data/uploads/

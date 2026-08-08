@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { v4 as uuid } from "uuid";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { store } from "./store.js";
 import { ADJACENT, MAP_CENTER, nowIso, jitter } from "./constants.js";
-import { analyzeZoneSkill, buildForecast, agentMode } from "./agents.js";
+import { analyzeZoneSkill, buildForecast, agentMode, suggestPrice, getSeasonForSkill } from "./agents.js";
+import { supabaseStatus } from "./supabase.js";
 import { seed } from "./seed.js";
 import {
   authenticate,
@@ -33,6 +37,8 @@ router.get("/health", (_req, res) => {
     product: "Hunar Naqsha",
     track: "Mohalla Mind",
     agent: agentMode(),
+    supabase: supabaseStatus(),
+    store: { engine: store.engine, path: store.path },
   });
 });
 
@@ -43,7 +49,7 @@ router.get("/ai/status", (_req, res) => {
 router.post("/demo/reset", async (_req, res) => {
   try {
     await seed();
-    res.json({ ok: true });
+    res.json({ ok: true, supabase: supabaseStatus() });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -186,6 +192,7 @@ router.get("/zones", (_req, res) => {
       ...z,
       gapLevel: worst,
       topShortageSkill: topGap?.skillCategory || null,
+      topReasoning: topGap?.aiReasoning || null,
       openNeedsCount: db.needs.filter((n) => n.zoneId === z.id && n.status === "open").length,
       skills: zs,
     };
@@ -277,14 +284,24 @@ router.post("/needs", requireAuth, async (req, res) => {
     matchedBidId: null,
     lat: coords.lat,
     lng: coords.lng,
+    targetWorkerId: req.body.targetWorkerId || null,
   };
   store.write((db) => db.needs.unshift(need));
-  notifyZoneWorkers(zoneId, skillCategory, {
-    type: "need",
-    title: "New need near you",
-    body: `${req.user.name}: ${description.slice(0, 90)}`,
-    link: `/needs/${need.id}`,
-  });
+  if (need.targetWorkerId) {
+    notifyUser(need.targetWorkerId, {
+      type: "rehire",
+      title: `${req.user.name} wants to book you again!`,
+      body: `They posted a new need: ${description.slice(0, 90)}`,
+      link: `/needs/${need.id}`,
+    });
+  } else {
+    notifyZoneWorkers(zoneId, skillCategory, {
+      type: "need",
+      title: "New need near you",
+      body: `${req.user.name}: ${description.slice(0, 90)}`,
+      link: `/needs/${need.id}`,
+    });
+  }
   const analysis = await analyzeZoneSkill(zoneId, skillCategory);
   if (analysis?.gapLevel === "red" || analysis?.gapLevel === "yellow") {
     notifyUser(req.user.id, {
@@ -633,6 +650,63 @@ router.patch("/bids/:id/accept", requireAuth, async (req, res) => {
   res.json({ need, bid, analysis });
 });
 
+/** Cancel a matched booking — reopen need, reject accepted bid. */
+router.post("/needs/:id/cancel", requireAuth, async (req, res) => {
+  const reason = String(req.body?.reason || "Cancelled by user").slice(0, 200);
+  let need;
+  let worker;
+  store.write((db) => {
+    need = db.needs.find((n) => n.id === req.params.id);
+    if (!need || need.status !== "matched" || need.jobDone) {
+      need = null;
+      return;
+    }
+    const isResidentOwner =
+      need.residentUserId === req.user.id ||
+      (!need.residentUserId && need.residentName === req.user.name);
+    const accepted = db.bids.find((b) => b.id === need.matchedBidId);
+    const matchedWorker = accepted ? db.workers.find((w) => w.id === accepted.workerId) : null;
+    const isMatchedWorker = matchedWorker?.userId === req.user.id;
+    if (!isResidentOwner && !isMatchedWorker) {
+      need = null;
+      return;
+    }
+    if (accepted) {
+      accepted.status = "cancelled";
+      accepted.cancelledAt = nowIso();
+      accepted.cancelReason = reason;
+    }
+    for (const b of db.bids) {
+      if (b.needId === need.id && b.status === "closed") b.status = "pending";
+    }
+    need.status = "open";
+    need.matchedAt = null;
+    need.matchedBidId = null;
+    need.cancelledAt = nowIso();
+    need.cancelReason = reason;
+    worker = matchedWorker;
+  });
+  if (!need) return res.status(400).json({ error: "Cannot cancel this booking" });
+  if (worker?.userId && worker.userId !== req.user.id) {
+    notifyUser(worker.userId, {
+      type: "cancel",
+      title: "Booking cancelled",
+      body: `${need.residentName || "Resident"} cancelled the matched job.`,
+      link: `/needs/${need.id}`,
+    });
+  }
+  if (need.residentUserId && need.residentUserId !== req.user.id) {
+    notifyUser(need.residentUserId, {
+      type: "cancel",
+      title: "Booking cancelled",
+      body: "The worker cancelled the matched job. Need is open again for bids.",
+      link: `/needs/${need.id}`,
+    });
+  }
+  const analysis = await analyzeZoneSkill(need.zoneId, need.skillCategory);
+  res.json({ need, analysis });
+});
+
 router.post("/ratings", async (req, res) => {
   const { workerId, needId, bidId, stars, comment } = req.body || {};
   if (!workerId || !needId || !bidId || !stars) {
@@ -707,6 +781,19 @@ router.patch("/ai/alerts/:id/resolve", (req, res) => {
     }
   });
   res.json({ ok: true });
+});
+
+router.get("/ai/price", async (req, res) => {
+  try {
+    const { zoneId, skill, urgency } = req.query;
+    if (!zoneId || !skill || !urgency) return res.status(400).json({ error: "Missing parameters" });
+    const zone = store.read().zones.find((z) => z.id === zoneId);
+    const season = getSeasonForSkill(skill);
+    const estimate = await suggestPrice(zone?.displayName || zoneId, skill, season, urgency);
+    res.json(estimate);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ---- Safe in-app chat (only after match) ----
@@ -831,6 +918,40 @@ router.patch("/workers/:id/availability", async (req, res) => {
   res.json(worker);
 });
 
+/** Upload worker profile photo as data URL (max ~600KB decoded). */
+router.post("/workers/:id/photo", requireAuth, async (req, res) => {
+  const { dataUrl } = req.body || {};
+  if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+    return res.status(400).json({ error: "dataUrl (image/*) required" });
+  }
+  if (dataUrl.length > 900_000) {
+    return res.status(400).json({ error: "Image too large — use under ~600KB" });
+  }
+
+  const db = store.read();
+  const worker = db.workers.find((w) => w.id === req.params.id);
+  if (!worker) return res.status(404).json({ error: "Worker not found" });
+  if (worker.userId && worker.userId !== req.user.id && req.user.workerId !== worker.id) {
+    return res.status(403).json({ error: "Only the worker can update this photo" });
+  }
+
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(dataUrl);
+  if (!match) return res.status(400).json({ error: "Invalid data URL" });
+  const ext = match[1].includes("png") ? "png" : match[1].includes("webp") ? "webp" : "jpg";
+  const buf = Buffer.from(match[2], "base64");
+  const uploadsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "uploads");
+  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+  const filename = `${worker.id}.${ext}`;
+  fs.writeFileSync(path.join(uploadsDir, filename), buf);
+  const photoUrl = `/api/uploads/${filename}?t=${Date.now()}`;
+
+  store.write((s) => {
+    const w = s.workers.find((x) => x.id === worker.id);
+    if (w) w.photoUrl = photoUrl;
+  });
+  res.json({ ...worker, photoUrl });
+});
+
 router.get("/worker/:id/stats", (req, res) => {
   const db = store.read();
   const worker = db.workers.find((w) => w.id === req.params.id);
@@ -870,6 +991,7 @@ router.get("/worker/:id/demand-nearby", (req, res) => {
       ...a,
       zone: db.zones.find((z) => z.id === a.zoneId),
       workerNotice: `📢 ${a.zoneId} ke paas ${a.skillCategory} ki demand zyada hai. Agar aap available ho, Hunar Naqsha par nearby needs dekhein.`,
+      reasoning: a.reasoning,
     }));
   res.json(hot);
 });

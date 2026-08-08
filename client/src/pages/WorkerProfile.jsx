@@ -24,6 +24,7 @@ export default function WorkerProfile() {
   const [worker, setWorker] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     api.worker(id).then(setWorker).catch(console.error);
@@ -75,18 +76,58 @@ export default function WorkerProfile() {
         )}
 
         <div className="relative mb-3">
-          <div
-            className="w-28 h-28 rounded-full grid place-items-center text-3xl font-extrabold text-[var(--navy)] border-4 border-white shadow-md"
-            style={{ background: "var(--blue-soft)" }}
-          >
-            {worker.name.slice(0, 1)}
-          </div>
+          {worker.photoUrl ? (
+            <img
+              src={worker.photoUrl}
+              alt={worker.name}
+              className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md"
+            />
+          ) : (
+            <div
+              className="w-28 h-28 rounded-full grid place-items-center text-3xl font-extrabold text-[var(--navy)] border-4 border-white shadow-md"
+              style={{ background: "var(--blue-soft)" }}
+            >
+              {worker.name.slice(0, 1)}
+            </div>
+          )}
           {worker.verified && (
             <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-[var(--teal)] text-white grid place-items-center border-2 border-white">
               <BadgeCheck size={14} />
             </span>
           )}
         </div>
+
+        {user.workerId === worker.id && (
+          <label className="btn btn-ghost text-xs py-2 px-3 mb-3 cursor-pointer">
+            {photoBusy ? "Uploading…" : "Upload photo"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={photoBusy}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setPhotoBusy(true);
+                try {
+                  const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                  });
+                  const updated = await api.uploadWorkerPhoto(worker.id, dataUrl);
+                  setWorker((w) => ({ ...w, photoUrl: updated.photoUrl }));
+                } catch (err) {
+                  alert(err.message);
+                } finally {
+                  setPhotoBusy(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </label>
+        )}
 
         <h1 className="font-display text-[1.55rem] m-0 leading-tight">Ustaad {worker.name}</h1>
         <p className="text-sm text-[var(--muted)] mt-1 mb-3">

@@ -1,23 +1,24 @@
 import "dotenv/config";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuid } from "uuid";
 import { store } from "./store.js";
 import { nowIso } from "./constants.js";
 import { notifyUser } from "./notify.js";
 
+// Keys from environment ONLY — never hardcode secrets in source
+const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || "").trim();
+const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
+
 const DEMO_DAYS = Number(process.env.DEMO_DAYS_TO_EID || 11);
 const FORCE_PRE_EID = process.env.DEMO_FORCE_PRE_EID !== "false";
-const GEMINI_MODELS = (process.env.GEMINI_MODEL || "gemini-2.0-flash,gemini-1.5-flash,gemini-flash-latest")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
 
 export function agentMode() {
-  const key = (process.env.GEMINI_API_KEY || "").trim();
+  const llm = OPENAI_API_KEY ? "openai" : GEMINI_API_KEY ? "gemini" : null;
   return {
-    mode: key ? "gemini+heuristic" : "heuristic",
-    geminiConfigured: Boolean(key),
-    models: GEMINI_MODELS,
+    mode: llm ? `${llm}+heuristic` : "heuristic",
+    openaiConfigured: Boolean(OPENAI_API_KEY),
+    geminiConfigured: Boolean(GEMINI_API_KEY),
+    llmConfigured: Boolean(llm),
+    models: OPENAI_API_KEY ? ["gpt-4o-mini"] : GEMINI_API_KEY ? ["gemini-2.0-flash"] : [],
     forcePreEid: FORCE_PRE_EID,
     daysToEid: DEMO_DAYS,
   };
@@ -235,14 +236,11 @@ function normalizeJudgment(raw, fallback) {
     reasoning: String(raw.reasoning || fallback.reasoning).slice(0, 600),
     action: String(raw.action || fallback.action).slice(0, 240),
     confidence: ["low", "medium", "high"].includes(confidence) ? confidence : "medium",
-    source: "gemini",
+    source: raw._source || "llm",
   };
 }
 
-async function callGemini(zoneName, skillCategory, metrics, season) {
-  const key = (process.env.GEMINI_API_KEY || "").trim();
-  if (!key) return null;
-
+async function callLlmJudge(zoneName, skillCategory, metrics, season) {
   const prompt = `You are GapDetectionAgent for Hunar Naqsha, a Pakistani mohalla skill marketplace.
 Fuse ALL signals — do not only summarize one number. Same counts can be green or red depending on season.
 
@@ -273,24 +271,61 @@ Rules of thumb:
 Return JSON only:
 {"gap_level":"green|yellow|red","reasoning":"2-3 sentences with numbers + combination","action":"one concrete next step","confidence":"low|medium|high"}`;
 
-  const genAI = new GoogleGenerativeAI(key);
-  for (const modelName of GEMINI_MODELS) {
+  if (OPENAI_API_KEY) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+        }),
       });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) continue;
-      const parsed = JSON.parse(match[0]);
-      console.log(`[GapAgent] Gemini OK via ${modelName}`);
-      return parsed;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error?.message || `HTTP ${response.status}`);
+      if (!data.choices?.[0]) throw new Error("Invalid OpenAI response");
+      const parsed = JSON.parse(data.choices[0].message.content);
+      console.log("[GapAgent] OpenAI OK via gpt-4o-mini");
+      return { ...parsed, _source: "openai" };
     } catch (err) {
-      console.warn(`[GapAgent] Gemini ${modelName} failed:`, err.message);
+      console.warn("[GapAgent] OpenAI failed:", err.message);
     }
   }
+
+  if (GEMINI_API_KEY) {
+    const models = (process.env.GEMINI_MODEL || "gemini-2.0-flash,gemini-1.5-flash")
+      .split(",")
+      .map((m) => m.trim())
+      .filter(Boolean);
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error?.message || `HTTP ${response.status}`);
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("Empty Gemini response");
+        const parsed = JSON.parse(text);
+        console.log(`[GapAgent] Gemini OK via ${model}`);
+        return { ...parsed, _source: "gemini" };
+      } catch (err) {
+        console.warn(`[GapAgent] Gemini ${model} failed:`, err.message);
+      }
+    }
+  }
+
   return null;
 }
 
@@ -299,30 +334,62 @@ function templateNotice(zoneName, skill, openNeeds, season) {
 }
 
 async function draftNotice(zoneName, skill, metrics, season, reasoning) {
-  const key = (process.env.GEMINI_API_KEY || "").trim();
-  if (!key) return templateNotice(zoneName, skill, metrics.openNeeds, season);
+  if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
+    return templateNotice(zoneName, skill, metrics.openNeeds, season);
+  }
 
   const prompt = `Write a short Pakistani WhatsApp community notice (Urdu+English mix OK).
 Zone: ${zoneName}; Skill: ${skill}; Open needs: ${metrics.openNeeds}; Season: ${season.seasonName}; Reason: ${reasoning}
 Max 4 lines, one emoji max, one CTA to register on Hunar Naqsha. JSON: {"notice_text":"..."}`;
 
-  const genAI = new GoogleGenerativeAI(key);
-  for (const modelName of GEMINI_MODELS) {
+  if (OPENAI_API_KEY) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.4,
+          response_format: { type: "json_object" },
+        }),
       });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) continue;
-      const notice = JSON.parse(match[0]).notice_text;
-      if (notice) return String(notice).slice(0, 500);
+      const data = await response.json();
+      if (data.choices?.[0]) {
+        const parsed = JSON.parse(data.choices[0].message.content);
+        if (parsed.notice_text) return String(parsed.notice_text).slice(0, 500);
+      }
     } catch (err) {
-      console.warn(`[NoticeAgent] ${modelName} failed:`, err.message);
+      console.warn("[NoticeAgent] OpenAI failed:", err.message);
     }
   }
+
+  if (GEMINI_API_KEY) {
+    try {
+      const model = (process.env.GEMINI_MODEL || "gemini-2.0-flash").split(",")[0].trim();
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
+        }),
+      });
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        if (parsed.notice_text) return String(parsed.notice_text).slice(0, 500);
+      }
+    } catch (err) {
+      console.warn("[NoticeAgent] Gemini failed:", err.message);
+    }
+  }
+
   return templateNotice(zoneName, skill, metrics.openNeeds, season);
 }
 
@@ -350,8 +417,8 @@ export async function analyzeZoneSkill(zoneId, skillCategory) {
   const metrics = collectZoneMetrics(zoneId, skillCategory);
   const season = getSeasonForSkill(skillCategory);
   const heuristic = heuristicJudge(metrics, season);
-  const geminiRaw = await callGemini(zone.displayName, skillCategory, metrics, season);
-  const judgment = normalizeJudgment(geminiRaw, heuristic);
+  const openaiRaw = await callLlmJudge(zone.displayName, skillCategory, metrics, season);
+  const judgment = normalizeJudgment(openaiRaw, heuristic);
   const why = confidenceWhy(metrics, judgment);
 
   const payload = {
@@ -487,4 +554,46 @@ export function buildForecast() {
       };
     })
     .filter(Boolean);
+}
+
+export async function suggestPrice(zoneName, skillCategory, season, urgency) {
+  if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
+    return { price_range: "Rs. 1,000–2,000 (estimated)" };
+  }
+
+  const prompt = `You are a pricing agent for Hunar Naqsha.
+Based on this context, suggest a fair and realistic price range in Pakistani Rupees (PKR) for this skill:
+- Skill: ${skillCategory}
+- Zone: ${zoneName}
+- Season context: ${season.seasonName} (demand multiplier: ${season.demandMultiplier}x)
+- Urgency: ${urgency}
+
+Respond ONLY with a JSON object: {"price_range": "e.g. Rs. 1,200–1,800"}
+The price should reflect standard Pakistani mohalla rates, scaled up slightly if urgency is high or season is elevated.`;
+
+  if (OPENAI_API_KEY) {
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+        }),
+      });
+      const data = await response.json();
+      if (data.choices?.[0]) {
+        return JSON.parse(data.choices[0].message.content);
+      }
+    } catch (err) {
+      console.warn("[PriceAgent] OpenAI failed:", err.message);
+    }
+  }
+
+  return { price_range: "Rs. 1,000–2,000" };
 }

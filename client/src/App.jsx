@@ -16,6 +16,7 @@ import Chats from "./pages/Chats";
 import MapPage from "./pages/MapPage";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import DemoSwitcher from "./components/DemoSwitcher";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/workers/:id" element={<WorkerProfile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <DemoSwitcher />
       </BrowserRouter>
     </AuthProvider>
   );

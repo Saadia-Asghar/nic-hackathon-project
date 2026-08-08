@@ -65,6 +65,18 @@ export default function ResidentDashboard() {
   }
 
   const active = needs.filter((n) => n.status !== "completed");
+  const completed = needs.filter((n) => n.status === "completed" && n.matchedBidId);
+
+  // Group by worker to avoid duplicates
+  const pastWorkers = [];
+  const seenWorkers = new Set();
+  completed.forEach(n => {
+    const matchedBid = n.bids?.find(b => b.id === n.matchedBidId);
+    if (matchedBid && matchedBid.worker && !seenWorkers.has(matchedBid.worker.id)) {
+      seenWorkers.add(matchedBid.worker.id);
+      pastWorkers.push(matchedBid.worker);
+    }
+  });
 
   return (
     <Shell>
@@ -149,15 +161,25 @@ export default function ResidentDashboard() {
 
       {forecast.length > 0 && (
         <div className="card p-4 mb-5">
-          <div className="text-sm font-semibold mb-2">Coming demand</div>
-          {forecast.map((f) => (
-            <div
-              key={f.skillCategory}
-              className="text-sm text-[var(--muted)] py-1.5 border-b border-[var(--line)] last:border-0"
-            >
-              {f.headline || f.skillCategory}
-            </div>
-          ))}
+          <div className="text-sm font-semibold mb-3">Coming demand</div>
+          {forecast.map((f) => {
+            const pct = Math.min(100, Math.round((Number(f.demandMultiplier) / 3) * 100));
+            return (
+              <div
+                key={f.skillCategory}
+                className="text-sm text-[var(--muted)] py-2 border-b border-[var(--line)] last:border-0"
+              >
+                <div className="flex justify-between gap-2 text-[var(--ink)] font-medium">
+                  <span>{f.skillCategory.split("&")[0].trim()}</span>
+                  <span className="text-xs text-[var(--teal)]">{f.demandMultiplier}×</span>
+                </div>
+                <div className="forecast-bar" aria-hidden>
+                  <span style={{ width: `${pct}%` }} />
+                </div>
+                <div className="text-[11px] mt-1">{f.headline || f.seasonFlag}</div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -259,6 +281,28 @@ export default function ResidentDashboard() {
           );
         })}
       </div>
+
+      {pastWorkers.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-display text-lg m-0 mb-3">My Past Providers</h2>
+          <div className="grid grid-cols-2 gap-2.5">
+            {pastWorkers.map((w) => (
+              <div key={w.id} className="card p-3 min-h-[96px] flex flex-col justify-between">
+                <div>
+                  <div className="font-bold text-sm">{w.name}</div>
+                  <div className="text-xs text-[var(--muted)]">{w.skillCategory.split(" ")[0]}</div>
+                </div>
+                <Link
+                  className="btn btn-outline-teal text-xs py-1.5 mt-2 w-full text-center"
+                  to={`/needs/new?skill=${encodeURIComponent(w.skillCategory)}&workerId=${w.id}&for=${encodeURIComponent(w.name)}`}
+                >
+                  Book Again
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </Shell>
   );
 }

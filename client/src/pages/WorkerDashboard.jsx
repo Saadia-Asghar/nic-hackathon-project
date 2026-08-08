@@ -137,10 +137,13 @@ export default function WorkerDashboard() {
       {nearby[0] && (
         <div className="card p-4 mb-5 border gap-red">
           <div className="text-xs font-bold uppercase tracking-wide opacity-70">Nearby demand</div>
-          <p className="text-sm mt-2 mb-3">
+          <p className="text-sm mt-2 mb-2">
             High {nearby[0].skillCategory} demand in {nearby[0].zone?.displayName || nearby[0].zoneId}.
             Bid if you can take work.
           </p>
+          {nearby[0].reasoning && (
+            <p className="text-[11px] opacity-80 mt-0 mb-3 leading-snug">Why: {nearby[0].reasoning}</p>
+          )}
           {nearby[0].workerNotice && (
             <a
               className="btn btn-accent w-full text-xs"

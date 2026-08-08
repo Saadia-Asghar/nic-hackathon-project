@@ -3,8 +3,9 @@ import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
 import { store } from "./store.js";
 import { nowIso } from "./constants.js";
+import { DEFAULT_JWT } from "./env.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "hunar-naqsha-dev-secret-change-me";
+const JWT_SECRET = (process.env.JWT_SECRET || "").trim() || DEFAULT_JWT;
 const JWT_EXPIRES = process.env.JWT_EXPIRES || "7d";
 const SALT_ROUNDS = 10;
 

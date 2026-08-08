@@ -44,10 +44,14 @@ export const api = {
   need: (id) => request(`/needs/${id}`),
   createNeed: (body) => request("/needs", { method: "POST", body: JSON.stringify(body) }),
   confirmDone: (id) => request(`/needs/${id}/complete`, { method: "POST" }),
+  cancelNeed: (id, reason) =>
+    request(`/needs/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
   repostNeed: (id) => request(`/needs/${id}/repost`, { method: "POST" }),
   workers: (q = "") => request(`/workers${q}`),
   worker: (id) => request(`/workers/${id}`),
   registerWorker: (body) => request("/workers", { method: "POST", body: JSON.stringify(body) }),
+  uploadWorkerPhoto: (id, dataUrl) =>
+    request(`/workers/${id}/photo`, { method: "POST", body: JSON.stringify({ dataUrl }) }),
   setAvailability: (id, availableThisWeek) =>
     request(`/workers/${id}/availability`, {
       method: "PATCH",
@@ -57,7 +61,8 @@ export const api = {
   workerStats: (id) => request(`/worker/${id}/stats`),
   demandNearby: (id) => request(`/worker/${id}/demand-nearby`),
   createBid: (body) => request("/bids", { method: "POST", body: JSON.stringify(body) }),
-  acceptBid: (id) => request(`/bids/${id}/accept`, { method: "PATCH" }),
+  acceptBid: (bidId) => request(`/bids/${bidId}/accept`, { method: "PATCH" }),
+  priceEstimate: (zoneId, skill, urgency) => request(`/ai/price?zoneId=${zoneId}&skill=${encodeURIComponent(skill)}&urgency=${urgency}`),
   rate: (body) => request("/ratings", { method: "POST", body: JSON.stringify(body) }),
   messages: (needId) => request(`/needs/${needId}/messages`),
   sendMessage: (needId, body) =>

@@ -9,12 +9,25 @@ export default function Profile() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [agentLabel, setAgentLabel] = useState("…");
+  const [supabaseLabel, setSupabaseLabel] = useState("…");
 
   useEffect(() => {
     api
       .agentStatus()
-      .then((s) => setAgentLabel(s.geminiConfigured ? "Gemini + heuristic" : "Heuristic (demo)"))
+      .then((s) =>
+        setAgentLabel(
+          s.llmConfigured || s.openaiConfigured || s.geminiConfigured
+            ? s.mode || "llm+heuristic"
+            : "Heuristic (demo)"
+        )
+      )
       .catch(() => setAgentLabel("Heuristic"));
+    api
+      .health()
+      .then((h) =>
+        setSupabaseLabel(h.supabase?.configured ? "Connected (mirror)" : "Not configured")
+      )
+      .catch(() => setSupabaseLabel("Unknown"));
   }, []);
 
   if (!ready) return null;
@@ -67,6 +80,10 @@ export default function Profile() {
         <div className="flex justify-between text-sm">
           <span className="text-[var(--muted)]">Gap agent</span>
           <span className="font-semibold">{agentLabel}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-[var(--muted)]">Supabase</span>
+          <span className="font-semibold">{supabaseLabel}</span>
         </div>
       </div>
 

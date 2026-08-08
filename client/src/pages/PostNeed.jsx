@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { api, SKILLS, SKILL_EMOJI } from "../api";
 import { useAuth } from "../auth";
@@ -10,6 +10,7 @@ function PostNeedForm() {
   const [params] = useSearchParams();
   const skillParam = params.get("skill");
   const forWorker = params.get("for");
+  const targetWorkerId = params.get("workerId");
   const [form, setForm] = useState({
     skillCategory: SKILLS.includes(skillParam) ? skillParam : "Tailoring & Stitching",
     description: forWorker ? `Looking for ${forWorker} — ` : "",
@@ -24,6 +25,26 @@ function PostNeedForm() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  const [estimate, setEstimate] = useState(null);
+  const [estimating, setEstimating] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const fetchEstimate = async () => {
+      setEstimating(true);
+      try {
+        const res = await api.priceEstimate(form.zoneId, form.skillCategory, form.urgency);
+        if (active) setEstimate(res.price_range);
+      } catch (e) {
+        console.warn("Price estimate failed", e);
+      } finally {
+        if (active) setEstimating(false);
+      }
+    };
+    const timer = setTimeout(fetchEstimate, 600);
+    return () => { active = false; clearTimeout(timer); };
+  }, [form.zoneId, form.skillCategory, form.urgency]);
+
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -33,6 +54,7 @@ function PostNeedForm() {
         ...form,
         residentName: user.name,
         residentUserId: user.id,
+        targetWorkerId: targetWorkerId || undefined,
       });
       nav(`/needs/${need.id}`);
     } catch (ex) {
@@ -76,13 +98,21 @@ function PostNeedForm() {
           />
         </div>
         <div className="field">
-          <label>Budget</label>
+          <label className="flex justify-between items-center">
+            Budget
+            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--blue-soft)] text-[var(--teal)]">
+              ✨ AI Suggestion
+            </span>
+          </label>
           <select value={form.budgetRange} onChange={(e) => set("budgetRange", e.target.value)}>
             <option value="500-1000">Rs. 500–1,000</option>
             <option value="1000-2000">Rs. 1,000–2,000</option>
             <option value="2000+">Rs. 2,000+</option>
             <option value="open">Open to bids</option>
           </select>
+          <p className="text-xs text-[var(--muted)] mt-1.5 mb-0">
+            Fair rate: <strong>{estimating ? "Calculating..." : estimate || "Loading..."}</strong>
+          </p>
         </div>
         <div className="field">
           <label>Urgency</label>

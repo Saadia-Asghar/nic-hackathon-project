@@ -78,6 +78,19 @@ export default function NeedDetail() {
     }
   }
 
+  async function cancelBooking() {
+    if (!window.confirm("Cancel this booking? The need will reopen for new bids.")) return;
+    try {
+      setBusy(true);
+      await api.cancelNeed(need.id, "Cancelled from need detail");
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!need) {
     return (
       <Shell title="Need" backTo="/app">
@@ -162,6 +175,9 @@ export default function NeedDetail() {
           </p>
           <button className="btn btn-primary w-full" onClick={confirmDone} disabled={busy}>
             Confirm job done
+          </button>
+          <button className="btn btn-ghost w-full mt-2 text-xs" onClick={cancelBooking} disabled={busy}>
+            Cancel booking (reopen need)
           </button>
         </div>
       )}

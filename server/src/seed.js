@@ -4,6 +4,7 @@ import { store } from "./store.js";
 import { ZONES, hoursAgo, daysAgo, jitter } from "./constants.js";
 import { analyzeZoneSkill } from "./agents.js";
 import { hashPassword } from "./auth.js";
+import { syncStoreToSupabase, supabaseEnabled } from "./supabase.js";
 
 export async function seed() {
   store.reset();
@@ -198,6 +199,51 @@ export async function seed() {
       registeredAt: daysAgo(40),
       ...place("Z1"),
     },
+    {
+      id: uuid(),
+      name: "Ali Raza",
+      skillCategory: "Plumbing",
+      zoneId: "Z5",
+      availability: "both",
+      bio: "Expert in leak fixing and motor installation",
+      photoUrl: null,
+      rating: 4.6,
+      completedJobs: 15,
+      isActive: true,
+      availableThisWeek: true,
+      registeredAt: daysAgo(20),
+      ...place("Z5"),
+    },
+    {
+      id: uuid(),
+      name: "Shazia",
+      skillCategory: "Beautician",
+      zoneId: "Z6",
+      availability: "weekends",
+      bio: "Bridal makeup and mehndi expert",
+      photoUrl: null,
+      rating: 4.8,
+      completedJobs: 25,
+      isActive: true,
+      availableThisWeek: true,
+      registeredAt: daysAgo(10),
+      ...place("Z6"),
+    },
+    {
+      id: uuid(),
+      name: "Bano",
+      skillCategory: "Cleaning",
+      zoneId: "Z1",
+      availability: "weekdays",
+      bio: "Deep cleaning and daily sweeping",
+      photoUrl: null,
+      rating: 4.3,
+      completedJobs: 42,
+      isActive: true,
+      availableThisWeek: true,
+      registeredAt: daysAgo(60),
+      ...place("Z1"),
+    },
   ];
 
   const n1 = uuid();
@@ -312,6 +358,48 @@ export async function seed() {
       matchedBidId: null,
       ...place("Z4"),
     },
+    {
+      id: uuid(),
+      skillCategory: "Plumbing",
+      description: "Water motor making strange noise, needs urgent fix",
+      budgetRange: "1000-2000",
+      urgency: "urgent",
+      zoneId: "Z5",
+      residentName: "Tariq",
+      status: "open",
+      createdAt: hoursAgo(1),
+      matchedAt: null,
+      matchedBidId: null,
+      ...place("Z5"),
+    },
+    {
+      id: uuid(),
+      skillCategory: "Beautician",
+      description: "Mehndi for 3 girls tomorrow evening",
+      budgetRange: "2000+",
+      urgency: "urgent",
+      zoneId: "Z6",
+      residentName: "Amina",
+      status: "open",
+      createdAt: hoursAgo(4),
+      matchedAt: null,
+      matchedBidId: null,
+      ...place("Z6"),
+    },
+    {
+      id: uuid(),
+      skillCategory: "Cleaning",
+      description: "Pre-Eid deep cleaning for a 3-bedroom house",
+      budgetRange: "2000+",
+      urgency: "pre-eid",
+      zoneId: "Z1",
+      residentName: "Sadia",
+      status: "open",
+      createdAt: hoursAgo(24),
+      matchedAt: null,
+      matchedBidId: null,
+      ...place("Z1"),
+    },
   ];
 
   db.bids = [
@@ -425,8 +513,16 @@ export async function seed() {
     ["Z1", "Home Tutoring"],
     ["Z4", "Electrical Work"],
     ["Z2", "Tailoring & Stitching"],
+    ["Z5", "Plumbing"],
+    ["Z6", "Beautician"],
+    ["Z1", "Cleaning"],
   ]) {
     await analyzeZoneSkill(z, s);
+  }
+
+  if (supabaseEnabled()) {
+    const sync = await syncStoreToSupabase(store.read());
+    console.log("Supabase sync →", sync.ok ? "ok" : sync.reason || sync.errors?.[0] || "failed");
   }
 
   console.log("Seed complete →", store.path);
