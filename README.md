@@ -1,47 +1,83 @@
-# Hunar Naqsha
+# Hunar Naqsha 🗺️✨
+**Apni gali ka hunar, apni marzi ka daam.**
+*(Your neighborhood’s skill, your own price)*
 
-Mobile-first Mohalla Mind app: neighborhood skill marketplace + AI gap detection.
+A mobile-first community skill marketplace with AI-powered gap detection, built for the **Mohalla Mind** track at GDG AI Seekho Builders Day 2026.
 
-## Docs
+![Hero Image](client/src/assets/hero.png) *(Note: Replace with your actual screenshot)*
 
-- [PRD](docs/PRD.md)
-- [TRD](docs/TRD.md)
-- [User Specs](docs/USER_SPECS.md)
-- [Features](docs/FEATURES.md)
+---
 
-## Run locally
+## 🏆 The Problem
+Pakistan has over **12 million home-based gig workers** (tailors, bakers, tutors) who rely entirely on word-of-mouth. If a resident in G-10 needs a tailor before Eid, they ask around on WhatsApp, often overpaying or failing to find nearby help. Meanwhile, a skilled tailor just one street over has no work because they lack a digital storefront.
 
+## 💡 Our Solution
+**Hunar Naqsha** makes the invisible mohalla economy visible. 
+1. **Hyperlocal Bidding:** Residents post a need in their zone (e.g., G-10). Workers see nearby jobs and bid with their own prices and timelines.
+2. **Community Trust:** Post-job feedback builds a public trust score (stars + completed jobs) for informal workers.
+3. **AI Gap Detection:** We integrated a **Gemini AI Agent** that fuses local demand, worker supply, bid response rates, and seasonal events (like Eid or exams) to predict skill shortages in specific zones before they become crises.
+
+---
+
+## 🏗️ Architecture
+
+You can view our complete system architecture diagram here:
+👉 [Visual Architecture Diagram](docs/architecture.md)
+
+---
+
+## 🤖 How We Used AI (Mohalla Mind Track)
+We built a **Gemini GapJudge Agent** that fulfills all 5 track requirements:
+1. **Fuse Signals:** Fuses open needs, registered workers, bid silence, and season calendars.
+2. **Reasoning:** It doesn't just summarize; it judges if a shortage is forming.
+3. **Real Action:** It drafts bilingual WhatsApp mobilization notices.
+4. **Show Impact:** The Home Dashboard zone tiles dynamically change colors (Green/Yellow/Red) based on the AI's judgment.
+5. **Explain Why:** Every AI alert includes a 2-3 sentence reasoning card explaining *why* the gap exists.
+
+---
+
+## 🚀 Quick Start (Run Locally)
+
+### Prerequisites
+- Node.js (v18+)
+- (For APK Build): Android Studio / Java JDK 17
+
+### 1. Start the API (Terminal 1)
 ```bash
-# terminal 1 — API (auto-seeds SQLite on first boot)
 cd server
 npm install
 npm run dev
+```
+*(Note: This automatically seeds the SQLite DB on first boot)*
 
-# terminal 2 — UI
+### 2. Start the Frontend (Terminal 2)
+```bash
 cd client
 npm install
 npm run dev
 ```
 
-Or from root after `npm install`:
+**Access the app:** `http://localhost:5173`
 
-```bash
-npm run dev
-```
+---
 
-- App: http://localhost:5173  
-- API: http://localhost:3001/api/health  
+## 🔐 Demo Accounts
+*We built this demo without complex auth to focus on the core marketplace flow.*
 
-## Demo accounts
-
-| Role | Email | Password |
+| Role | Name | Notes |
 |------|-------|----------|
-| Resident | fatima@demo.com | demo123 |
-| Worker | aisha@demo.com | demo123 |
+| **Resident** | Fatima | Can post needs, accept bids, and chat. |
+| **Worker** | Ustaad Aisha | Can view local jobs, submit bids, and get rated. |
 
-After login you only see **your** dashboard (resident ≠ worker).
-  
+*(The dashboard automatically adapts based on the user's role.)*
 
-## Stack
+---
 
-React + Vite + Tailwind · Express · JSON file DB · Gemini GapDetectionAgent (heuristic fallback)  
+## 🛠️ Tech Stack
+- **Frontend:** React, Vite, Tailwind CSS, Lucide Icons (Mobile-First UI)
+- **Backend:** Node.js, Express, SQLite
+- **AI / Agent:** Google Gemini Pro API
+- **Deployment:** Expo / Capacitor for Android APK generation.
+
+---
+*Built with ❤️ in Islamabad by Saadia-Asghar's Team for the GDG AI Seekho Builders Day Hackathon.*

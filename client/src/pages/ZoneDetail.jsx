@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { api, SKILL_EMOJI, whatsappShareUrl } from "../api";
 import { useAuth } from "../auth";
 import { GapBadge, Shell, Sparkline, UrgencyBadge } from "../components";
+import "leaflet/dist/leaflet.css";
+
+const GAP_COLOR = {
+  green: "#42744d",
+  yellow: "#c9891a",
+  red: "#c23b4b",
+};
 
 export default function ZoneDetail() {
   const { id } = useParams();
@@ -36,9 +44,47 @@ export default function ZoneDetail() {
   )[0];
   const redAlert = (zone.alerts || []).find((a) => a.gapLevel === "red");
   const skillHistory = history.filter((h) => h.skillCategory === top?.skillCategory).slice(0, 7).reverse();
+  const gapLevel = top?.gapLevel || "green";
+  const hasCoords = zone.lat != null && zone.lng != null;
 
   return (
     <Shell title={zone.displayName} backTo="/app">
+      {hasCoords && (
+        <div className="map-frame mb-4 overflow-hidden rounded-2xl border border-[var(--line)]">
+          <MapContainer
+            center={[zone.lat, zone.lng]}
+            zoom={16}
+            scrollWheelZoom={false}
+            style={{ height: "180px", width: "100%" }}
+          >
+            <TileLayer
+              attribution="&copy; OSM"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <CircleMarker
+              center={[zone.lat, zone.lng]}
+              radius={22}
+              pathOptions={{
+                color: GAP_COLOR[gapLevel],
+                fillColor: GAP_COLOR[gapLevel],
+                fillOpacity: 0.35,
+                weight: 2,
+              }}
+            >
+              <Popup>
+                {zone.displayName} · {gapLevel}
+              </Popup>
+            </CircleMarker>
+          </MapContainer>
+          <div className="px-3 py-2 border-t border-[var(--line)] flex justify-between items-center">
+            <span className="text-xs text-[var(--muted)]">Model Town · live map</span>
+            <Link to="/map" className="text-xs font-semibold no-underline text-[var(--rose-deep)]">
+              Full mohalla map →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {top && (
         <div className={`card p-4 mb-4 border gap-${top.gapLevel}`}>
           <div className="flex justify-between items-center gap-2">
@@ -101,7 +147,7 @@ export default function ZoneDetail() {
       </div>
 
       <h2 className="font-display text-lg mb-2">Open needs</h2>
-      <div className="space-y-2">
+      <div className="space-y-2 mb-8">
         {(zone.needs || [])
           .filter((n) => n.status === "open")
           .map((n) => (

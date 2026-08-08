@@ -1,182 +1,163 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Map, MessageCircle, Search, Share2, Sparkles } from "lucide-react";
-import { api, SKILL_EMOJI, whatsappShareUrl } from "../api";
+import { Plus, Share2, ChevronDown, ChevronUp } from "lucide-react";
+import { api, whatsappShareUrl } from "../api";
 import { useAuth } from "../auth";
-import { GapBadge, Shell, Stars, TrustRing, UrgencyBadge } from "../components";
+import { GapBadge, Shell, Stars, timeAgo, initials } from "../components";
 
 export default function ResidentDashboard() {
   const { user } = useAuth();
   const [needs, setNeeds] = useState([]);
   const [alert, setAlert] = useState(null);
-  const [forecast, setForecast] = useState([]);
-  const [top, setTop] = useState([]);
+  const [expanded, setExpanded] = useState({});
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    const [n, a] = await Promise.all([api.residentNeeds(user.id), api.alerts()]);
+    setNeeds(n);
+    setAlert(a[0] || null);
+    const firstOpen = n.find((x) => x.status === "open" && (x.bids?.length || x.bidCount));
+    if (firstOpen) setExpanded({ [firstOpen.id]: true });
+  }
 
   useEffect(() => {
-    Promise.all([
-      api.residentNeeds(user.id),
-      api.alerts(),
-      api.forecast(),
-      api.topWorkers(user.zoneId || "Z3"),
-    ])
-      .then(([n, a, f, t]) => {
-        setNeeds(n);
-        setAlert(a[0] || null);
-        setForecast(f.slice(0, 2));
-        setTop(t.slice(0, 3));
-      })
-      .catch((e) => setErr(e.message));
-  }, [user.id, user.zoneId]);
+    load().catch((e) => setErr(e.message));
+  }, [user.id]);
 
-  const open = needs.filter((n) => n.status === "open").length;
-  const matched = needs.filter((n) => ["matched", "completed"].includes(n.status));
+  async function accept(bidId) {
+    try {
+      setBusy(true);
+      await api.acceptBid(bidId);
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const active = needs.filter((n) => n.status !== "completed");
 
   return (
-    <Shell title={`Hi, ${user.name.split(" ")[0]}`}>
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <Link className="btn btn-primary" to="/needs/new">
-          Post need
-        </Link>
-        <Link className="btn btn-ghost" to="/discover">
-          <Search size={15} /> Find
-        </Link>
-        <Link className="btn btn-ghost" to="/map">
-          <Map size={15} /> Map
-        </Link>
+    <Shell>
+      <div className="pt-3 pb-2">
+        <h1 className="font-display text-[1.75rem] m-0 leading-tight">
+          Salam, {user.name.split(" ")[0]}!
+        </h1>
+        <p className="text-[var(--muted)] mt-1.5 mb-5 text-[0.95rem]">
+          What local skill do you need today?
+        </p>
       </div>
+
+      <Link to="/needs/new" className="cta-post mb-7">
+        <span className="cta-post-icon">
+          <Plus size={22} strokeWidth={2.5} />
+        </span>
+        + Post a Skill Need
+      </Link>
 
       {alert && (
-        <div className={`card p-4 mb-4 border gap-${alert.gapLevel}`}>
+        <div className={`card p-4 mb-5 border gap-${alert.gapLevel}`}>
           <div className="flex justify-between items-center gap-2">
-            <div className="text-xs font-semibold uppercase tracking-wide opacity-70">Hunar alert</div>
+            <div className="text-xs font-bold uppercase tracking-wide opacity-70">AI Alert</div>
             <GapBadge level={alert.gapLevel} />
           </div>
-          <div className="font-semibold mt-2 text-sm">
-            {SKILL_EMOJI[alert.skillCategory]} {alert.skillCategory} · {alert.zone?.displayName}
-          </div>
-          <p className="text-sm mt-2 mb-3 line-clamp-2 leading-snug opacity-90">{alert.reasoning}</p>
-          <div className="flex gap-2">
-            {alert.whatsappNotice && (
-              <a
-                className="btn btn-accent flex-1 text-xs py-2"
-                href={whatsappShareUrl(alert.whatsappNotice)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Share2 size={14} /> Share WhatsApp
-              </a>
-            )}
-            <Link className="btn btn-ghost flex-1 text-xs py-2" to={`/alerts/${alert.id}`}>
-              Details
-            </Link>
-          </div>
-          <button
-            className="btn btn-ghost w-full mt-2 text-xs"
-            type="button"
-            onClick={async () => {
-              await api.markHandled(alert.zoneId, alert.skillCategory);
-              setAlert(null);
-            }}
-          >
-            Community is handling this
-          </button>
+          <p className="text-sm mt-2 mb-3 leading-snug">{alert.reasoning}</p>
+          {alert.whatsappNotice && (
+            <a
+              className="btn btn-accent w-full text-xs"
+              href={whatsappShareUrl(alert.whatsappNotice)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Share2 size={14} /> Share on WhatsApp
+            </a>
+          )}
         </div>
       )}
 
-      {forecast.length > 0 && (
-        <div className="card p-4 mb-4">
-          <div className="text-sm font-semibold flex items-center gap-2 mb-2">
-            <Sparkles size={15} className="text-[var(--rose)]" /> Coming demand
-          </div>
-          {forecast.map((f) => (
-            <div key={f.skillCategory} className="text-sm text-[var(--muted)] py-1.5 border-b border-[var(--line)] last:border-0">
-              {SKILL_EMOJI[f.skillCategory]} {f.headline}
-            </div>
-          ))}
-        </div>
-      )}
+      {err && <p className="text-sm text-[var(--red)] mb-3">{err}</p>}
 
-      <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <div className="card p-4">
-          <div className="text-2xl font-semibold">{open}</div>
-          <div className="text-xs text-[var(--muted)]">Waiting for bids</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-2xl font-semibold">{matched.length}</div>
-          <div className="text-xs text-[var(--muted)]">Matched / done</div>
-        </div>
-      </div>
-
-      {top.length > 0 && (
-        <div className="mb-4">
-          <h2 className="font-display text-lg m-0 mb-2">Top in your zone</h2>
-          <div className="space-y-2">
-            {top.map((w) => (
-              <Link key={w.id} to={`/workers/${w.id}`} className="card p-3 flex gap-3 no-underline text-inherit items-center">
-                <TrustRing score={w.trustScore || 0} />
-                <div className="min-w-0">
-                  <div className="font-semibold text-sm">{w.name}</div>
-                  <div className="text-xs text-[var(--muted)]">
-                    {w.skillCategory.split(" ")[0]} · <Stars value={w.rating} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {err && <p className="text-sm text-[var(--red)]">{err}</p>}
-
-      <h2 className="font-display text-lg m-0 mb-2">My activity</h2>
-      <div className="space-y-2.5">
-        {needs.length === 0 && (
-          <div className="card p-4 text-sm text-[var(--muted)]">No posts yet — tap Post need.</div>
+      <h2 className="font-display text-lg m-0 mb-3">My Active Needs</h2>
+      <div className="space-y-4">
+        {active.length === 0 && (
+          <div className="card p-5 text-sm text-[var(--muted)]">No active needs yet — post one above.</div>
         )}
-        {needs.map((n) => (
-          <div key={n.id} className="card p-4">
-            <Link to={`/needs/${n.id}`} className="no-underline text-inherit block">
-              <div className="flex justify-between gap-2 items-start">
-                <div className="font-semibold text-sm">
-                  {SKILL_EMOJI[n.skillCategory]} {n.skillCategory}
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="pill capitalize">{n.status}</span>
-                  <UrgencyBadge urgency={n.urgency} />
-                </div>
+        {active.map((n) => {
+          const open = !!expanded[n.id];
+          const bids = n.bids || [];
+          return (
+            <div key={n.id} className="card p-4">
+              <div className="flex justify-between items-center gap-2 mb-2">
+                <span className="pill">{n.skillCategory.split(" ")[0]}</span>
+                <span className="text-xs text-[var(--muted)]">{timeAgo(n.createdAt)}</span>
               </div>
-              <p className="text-sm text-[var(--muted)] mt-2 mb-1 line-clamp-2">{n.description}</p>
-              <div className="text-xs text-[var(--muted)]">
-                {n.zone?.displayName} · {n.bidCount} bids
-              </div>
-            </Link>
-            <div className="flex gap-2 mt-3">
+              <Link to={`/needs/${n.id}`} className="no-underline text-inherit">
+                <h3 className="font-display text-base m-0 mb-1 leading-snug">
+                  {n.description.slice(0, 60)}
+                  {n.description.length > 60 ? "…" : ""}
+                </h3>
+                <p className="text-sm text-[var(--muted)] mt-0 mb-3 line-clamp-2">{n.description}</p>
+              </Link>
+
+              {n.status === "open" && (
+                <div className="rounded-xl bg-[var(--blue-soft)] p-3">
+                  <button
+                    type="button"
+                    className="w-full flex justify-between items-center bg-transparent border-0 p-0 cursor-pointer font-semibold text-sm text-[var(--navy)]"
+                    onClick={() => setExpanded((e) => ({ ...e, [n.id]: !open }))}
+                  >
+                    {bids.length || n.bidCount || 0} local bids received
+                    {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                  {open && (
+                    <div className="space-y-2.5 mt-3">
+                      {bids.length === 0 && (
+                        <p className="text-xs text-[var(--muted)] m-0">Waiting for workers…</p>
+                      )}
+                      {bids.map((b) => (
+                        <div key={b.id} className="bg-white rounded-xl p-3">
+                          <div className="flex gap-2.5 items-start">
+                            <div className="chat-avatar">{initials(b.worker?.name)}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-sm">{b.worker?.name}</div>
+                              <div className="text-xs text-[var(--muted)]">
+                                <Stars value={b.worker?.rating} /> ({b.worker?.completedJobs || 0} jobs)
+                              </div>
+                              <div className="font-extrabold text-[var(--navy)] mt-1">
+                                Rs. {b.priceRs.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-[var(--muted)]">
+                                Ready in {b.timelineDays} day(s)
+                              </div>
+                            </div>
+                          </div>
+                          {b.status === "pending" && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-teal w-full mt-2.5 text-sm py-2"
+                              disabled={busy}
+                              onClick={() => accept(b.id)}
+                            >
+                              Accept Bid
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {["matched", "completed"].includes(n.status) && (
-                <Link className="btn btn-ghost flex-1 text-xs py-2" to={`/needs/${n.id}/chat`}>
-                  <MessageCircle size={14} /> Chat
+                <Link className="btn btn-primary w-full mt-1 text-sm" to={`/needs/${n.id}/chat`}>
+                  Open safe chat
                 </Link>
-              )}
-              {n.status === "matched" && !n.jobDone && (
-                <Link className="btn btn-primary flex-1 text-xs py-2" to={`/needs/${n.id}`}>
-                  Confirm done
-                </Link>
-              )}
-              {n.status === "completed" && (
-                <button
-                  className="btn btn-ghost flex-1 text-xs py-2"
-                  type="button"
-                  onClick={async () => {
-                    const { need } = await api.repostNeed(n.id);
-                    window.location.href = `/needs/${need.id}`;
-                  }}
-                >
-                  Repost
-                </button>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Shell>
   );

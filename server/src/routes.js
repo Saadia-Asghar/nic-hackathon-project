@@ -13,7 +13,7 @@ import {
   signToken,
 } from "./auth.js";
 import { computeTrust } from "./trust.js";
-import { notifyUser } from "./notify.js";
+import { notifyUser, notifyZoneWorkers } from "./notify.js";
 
 const router = Router();
 
@@ -264,6 +264,12 @@ router.post("/needs", requireAuth, async (req, res) => {
     lng: coords.lng,
   };
   store.write((db) => db.needs.unshift(need));
+  notifyZoneWorkers(zoneId, skillCategory, {
+    type: "need",
+    title: "New need near you",
+    body: `${req.user.name}: ${description.slice(0, 90)}`,
+    link: `/needs/${need.id}`,
+  });
   const analysis = await analyzeZoneSkill(zoneId, skillCategory);
   if (analysis?.gapLevel === "red" || analysis?.gapLevel === "yellow") {
     notifyUser(req.user.id, {

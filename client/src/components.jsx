@@ -1,82 +1,103 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { Home, PlusCircle, Briefcase, LogOut, ChevronLeft, Map, Search, Bell } from "lucide-react";
+import {
+  Home,
+  Map,
+  MessageCircle,
+  User,
+  Bell,
+  MapPin,
+  LogOut,
+  ChevronLeft,
+} from "lucide-react";
 import { useAuth } from "./auth";
 
-export function Shell({ children, title, backTo, hideNav = false }) {
-  const { user, isResident, isWorker, logout } = useAuth();
+const ZONE_LABEL = {
+  Z1: "Gali 1–2",
+  Z2: "Gali 3–4",
+  Z3: "Gali 5–7",
+  Z4: "Gali 8–9",
+  Z5: "Main Market",
+  Z6: "Back Streets",
+};
+
+export function mohallaLabel(zoneId) {
+  return ZONE_LABEL[zoneId] || "Mohalla";
+}
+
+export function Shell({ children, title, backTo, hideNav = false, showMohalla = true }) {
+  const { user, logout } = useAuth();
   const { pathname } = useLocation();
 
-  let tabs = [];
-  if (isResident) {
-    tabs = [
-      { to: "/app", label: "Home", icon: Home, match: (p) => p === "/app" },
-      { to: "/discover", label: "Find", icon: Search, match: (p) => p.startsWith("/discover") },
-      { to: "/map", label: "Map", icon: Map, match: (p) => p.startsWith("/map") },
-      { to: "/needs/new", label: "Post", icon: PlusCircle, match: (p) => p.startsWith("/needs/new") },
-    ];
-  } else if (isWorker) {
-    tabs = [
-      { to: "/app", label: "Jobs", icon: Briefcase, match: (p) => p === "/app" || p.startsWith("/worker/") },
-      { to: "/map", label: "Map", icon: Map, match: (p) => p.startsWith("/map") },
-      { to: "/notifications", label: "Alerts", icon: Bell, match: (p) => p.startsWith("/notifications") },
-    ];
-  }
+  const tabs = user
+    ? [
+        { to: "/app", label: "Home", icon: Home, match: (p) => p === "/app" },
+        { to: "/map", label: "Map", icon: Map, match: (p) => p.startsWith("/map") },
+        {
+          to: "/chats",
+          label: "Chat",
+          icon: MessageCircle,
+          match: (p) => p.startsWith("/chats") || p.includes("/chat"),
+        },
+        { to: "/profile", label: "Profile", icon: User, match: (p) => p.startsWith("/profile") },
+      ]
+    : [];
+
+  const zoneName = mohallaLabel(user?.zoneId);
 
   return (
     <div className="app-shell">
-      <header className="px-4 pt-5 pb-2 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          {backTo ? (
-            <>
+      <header className="px-4 pt-2">
+        {backTo ? (
+          <div className="flex items-start justify-between gap-3 pt-3 pb-1">
+            <div className="min-w-0">
               <Link to={backTo} className="inline-flex items-center gap-1 text-sm text-[var(--muted)] no-underline mb-1">
                 <ChevronLeft size={16} /> Back
               </Link>
               {title && <h1 className="font-display text-[1.35rem] mt-0 mb-0 leading-tight">{title}</h1>}
-            </>
-          ) : (
-            <div>
-              <div className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wide">
-                {user?.role === "worker" ? "Worker" : "Resident"}
-              </div>
-              <div className="font-display text-xl truncate">{title || user?.name || "Hunar Naqsha"}</div>
             </div>
-          )}
-        </div>
-        {user && (
-          <div className="flex items-center gap-1 shrink-0">
-            {isResident && (
-              <Link to="/notifications" className="btn btn-ghost text-xs py-2 px-2.5 no-underline" title="Notifications">
-                <Bell size={14} />
+            <Link to="/notifications" className="p-2 text-[var(--navy)]" aria-label="Notifications">
+              <Bell size={20} />
+            </Link>
+          </div>
+        ) : (
+          <div className="top-bar">
+            <div className="flex items-center gap-1.5 text-[var(--navy)]">
+              <MapPin size={18} strokeWidth={2.4} />
+              <span className="top-bar-title">{showMohalla ? zoneName : title || "Hunar Naqsha"}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Link to="/notifications" className="p-2 text-[var(--navy)]" aria-label="Notifications">
+                <Bell size={20} />
               </Link>
-            )}
-            <button
-              className="btn btn-ghost text-xs py-2 px-3"
-              onClick={() => {
-                logout();
-                window.location.href = "/";
-              }}
-              type="button"
-            >
-              <LogOut size={14} /> Out
-            </button>
+              {user && (
+                <button
+                  className="p-2 text-[var(--muted)]"
+                  type="button"
+                  title="Log out"
+                  onClick={() => {
+                    logout();
+                    window.location.href = "/";
+                  }}
+                >
+                  <LogOut size={18} />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </header>
       <main className="px-4">{children}</main>
       {!hideNav && tabs.length > 0 && (
-        <nav className="fixed bottom-0 left-0 right-0 z-20">
-          <div className="max-w-[430px] mx-auto px-3 pb-3">
-            <div
-              className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,253,249,0.95)] backdrop-blur shadow-[0_12px_40px_rgba(158,107,122,0.12)] py-2 px-1"
-              style={{ display: "grid", gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
-            >
+        <nav className="fixed bottom-0 left-0 right-0 z-30">
+          <div className="max-w-[430px] mx-auto">
+            <div className="bottom-nav" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
               {tabs.map((t) => {
                 const active = t.match(pathname);
                 const Icon = t.icon;
                 return (
                   <Link key={t.label} to={t.to} className={`nav-item ${active ? "active" : ""}`}>
                     <span className="nav-icon">
-                      <Icon size={16} strokeWidth={2.25} />
+                      <Icon size={20} strokeWidth={active ? 2.4 : 2} />
                     </span>
                     {t.label}
                   </Link>
@@ -119,9 +140,9 @@ export function GapBadge({ level }) {
 export function UrgencyBadge({ urgency }) {
   if (!urgency || urgency === "flexible") return null;
   const map = {
-    urgent: { label: "Needed today", cls: "gap-red" },
+    urgent: { label: "Urgent", cls: "gap-red" },
     "pre-eid": { label: "Before Eid", cls: "gap-yellow" },
-    week: { label: "Within a week", cls: "gap-yellow" },
+    week: { label: "Standard", cls: "gap-yellow" },
   };
   const item = map[urgency] || { label: urgency, cls: "gap-yellow" };
   return (
@@ -146,14 +167,14 @@ export function Sparkline({ history = [] }) {
     .join(" ");
   return (
     <svg width={w} height={h} className="block">
-      <polyline fill="none" stroke="#d4537e" strokeWidth="2" points={points} />
+      <polyline fill="none" stroke="#1a237e" strokeWidth="2" points={points} />
     </svg>
   );
 }
 
 export function Stars({ value }) {
   const n = Math.round(Number(value) || 0);
-  return <span className="tracking-tight text-[var(--caramel)]">{"★".repeat(n)}{"☆".repeat(Math.max(0, 5 - n))}</span>;
+  return <span className="tracking-tight text-[#f9a825]">{"★".repeat(n)}{"☆".repeat(Math.max(0, 5 - n))}</span>;
 }
 
 export function TrustRing({ score = 0 }) {
@@ -164,4 +185,53 @@ export function TrustRing({ score = 0 }) {
       {p}
     </div>
   );
+}
+
+export function JobStepper({ status, jobDone }) {
+  let stage = 0;
+  if (status === "matched" || status === "completed") stage = 1;
+  if (status === "matched" && jobDone) stage = 2;
+  if (status === "completed") stage = 3;
+
+  const steps = [
+    { key: "booked", label: "Booked", icon: "✓" },
+    { key: "progress", label: "In Progress", icon: "✂" },
+    { key: "done", label: "Completed", icon: "✓" },
+  ];
+
+  const fillPct = stage <= 1 ? 0 : stage === 2 ? 50 : 100;
+
+  return (
+    <div className="stepper">
+      <div className="stepper-line-done" style={{ width: `calc(${fillPct}% * 0.68)` }} />
+      {steps.map((s, i) => {
+        const n = i + 1;
+        const cls = stage > n ? "done" : stage === n ? "current" : "";
+        return (
+          <div key={s.key} className={`step ${cls}`}>
+            <div className="step-dot">{s.icon}</div>
+            <div className="step-label">{s.label}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function timeAgo(iso) {
+  if (!iso) return "";
+  const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 60) return `Posted ${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 48) return `Posted ${hrs}h ago`;
+  return `Posted ${Math.round(hrs / 24)}d ago`;
+}
+
+export function initials(name = "?") {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
